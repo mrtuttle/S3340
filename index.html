@@ -121,7 +121,12 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
 #start p{color:var(--dim);max-width:480px;font-size:16px;line-height:1.35;margin:0}
 #start .btn{font-size:20px;padding:14px 28px}
 #help{position:fixed;inset:0;background:rgba(10,11,12,.92);z-index:90;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:16px}
-#help.show{display:flex}
+#help.show,.dlg.show{display:flex}
+.dlg{position:fixed;inset:0;background:rgba(10,11,12,.9);z-index:91;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:16px}
+.dlg .card{background:#1e2023;border:1px solid var(--line);border-radius:12px;max-width:560px;width:100%;padding:18px 20px;font:15px system-ui,sans-serif}
+.dlg h3{font-family:'Barlow Condensed',sans-serif;letter-spacing:2px;margin:0 0 10px;color:var(--acc)}
+.mrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:space-between;margin:10px 0}
+.mrow select{text-transform:none;min-width:150px}
 #help .card{background:#1e2023;border:1px solid var(--line);border-radius:12px;max-width:700px;padding:18px 20px;font-size:15px;line-height:1.4;font-family:system-ui,sans-serif}
 #help h3{font-family:'Barlow Condensed',sans-serif;letter-spacing:2px;margin:14px 0 4px;color:var(--acc)}#help h3:first-child{margin-top:0}
 #help ul{margin:0;padding-left:18px}#help li{margin:2px 0}
@@ -146,7 +151,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
     <li><b>Manopole</b>: trascina su/giù. Doppio tocco = valore iniziale. Desktop: rotellina, Shift = fine.</li>
     <li><b>Levette</b>: tocca per commutare (o tocca la scritta del lato voluto).</li>
     <li><b>Patchbay</b>: tocca un'uscita (etichetta chiara) e poi un ingresso (etichetta rossa), oppure trascina. Tocca un ingresso collegato per staccare il cavo. Normalizzazioni: KB CV→OSC CV, GATE→ENV GATE, NOISE→EXT AUDIO, +5V→MIX 1, ENV→VCA.</li>
-    <li><b>MIDI IN</b>: accetta una tastiera MIDI (Chrome/Edge). <b>PHONES</b> è l'uscita audio del browser. <b>POWER</b>: tocca il LED per sospendere/riattivare l'audio.</li>
+    <li><b>MIDI</b> (pulsante in alto): canale di ingresso 1–16, MIDI THRU verso una porta d'uscita, invio delle note di pad e sequencer (USB OUT), clock MIDI in ingresso. Web MIDI funziona in Chrome/Edge su computer e Android, non su iPhone. <b>PHONES</b> è l'uscita audio del browser. <b>POWER</b>: tocca il LED per sospendere/riattivare l'audio.</li>
   </ul>
   <h3>SEQUENCER (come sull'hardware)</h3>
   <ul>
@@ -166,6 +171,15 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
   <p style="margin-top:14px"><button class="btn on" id="helpClose">Chiudi</button></p>
 </div></div>
 
+<div id="midiDlg" class="dlg"><div class="card">
+  <h3>MIDI</h3>
+  <p class="mrow"><label>Canale MIDI IN (interruttori sul retro)</label><select class="btn" id="mCh"></select></p>
+  <p class="mrow"><label>Porta di uscita (THRU / USB OUT)</label><select class="btn" id="mOut"><option value="">nessuna</option></select></p>
+  <p class="mrow"><label><input type="checkbox" id="mThru"> MIDI THRU: ripete in uscita ciò che arriva su MIDI IN</label></p>
+  <p class="mrow"><label><input type="checkbox" id="mNotes"> USB OUT: invia le note di pad, tastiera e sequencer sul canale scelto</label></p>
+  <p class="mrow" style="color:var(--dim);font-size:13px">Web MIDI funziona in Chrome/Edge su computer e Android; Safari e iPhone non lo supportano.</p>
+  <p><button class="btn on" id="midiClose">Chiudi</button></p>
+</div></div>
 <div class="wrap">
 <header>
   <div class="brand"><b>S<i>·</i>3340</b><small>schema Behringer Crave · non ufficiale</small></div>
@@ -178,7 +192,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
   <button class="btn" id="fsBtn">⛶</button>
   <button class="btn" id="panic">PANIC</button>
   <button class="btn" id="helpBtn">?</button>
-  <span class="btn" id="midiSt" style="cursor:default;opacity:.7">MIDI –</span>
+  <button class="btn" id="midiSt">MIDI –</button>
   <div class="lcd" id="lcd">Pronto.</div>
 </header>
 <div id="rotate">↻ Ruota il telefono in orizzontale per avere il pannello più grande, oppure usa ZOOM e scorri.</div>
@@ -204,15 +218,15 @@ function makeEngine(){
   function th(x){if(x<-3)return -1;if(x>3)return 1;const x2=x*x;return x*(27+x2)/(27+9*x2);}
   function blep(t,dt){if(t<dt){t/=dt;return t+t-t*t-1;}if(t>1-dt){t=(t-1)/dt;return t*t+t+t+1;}return 0;}
   class Voice{constructor(seed){this.ph=Math.random();this.pitch=0;this.target=0;this.note=60;this.gate=false;this.trig=false;this.lastG=false;this.env=0;this.stage=0;
-    this.s0=0;this.s1=0;this.s2=0;this.s3=0;this.vel=.8;this.accent=0;this.age=0;this.owner='';this.glc=-1;this.rnd=(seed>>>0)||1;this.active=false;this.o=new Float32Array(OUT.length);}}
+    this.s0=0;this.s1=0;this.s2=0;this.s3=0;this.vel=.8;this.accent=0;this.age=0;this.owner='';this.glc=-1;this.det=0;this.dr=0;this.rnd=(seed>>>0)||1;this.active=false;this.o=new Float32Array(OUT.length);}}
   class Engine{
     constructor(sr){
       this.sr=sr;
-      this.p={freq:.5,pw:0,oscMod:0,mix:0,shape:1,modSrc:0,modDest:0,cutoff:.55,res:.25,vcfMod:.45,fMode:0,vcfSrc:0,vcfPol:0,vol:.7,vcaMode:0,att:.02,dec:.5,sus:.6,susOn:1,lfoRate:.45,lfoShape:1,glide:0,vcMix:.5,tempo:.4,swing:.5};
+      this.p={freq:.5,pw:.5,oscMod:0,mix:0,shape:1,modSrc:0,modDest:0,cutoff:.55,res:.25,vcfMod:.45,fMode:0,vcfSrc:0,vcfPol:0,vol:.7,vcaMode:0,att:.02,dec:.5,sus:.6,susOn:1,lfoRate:.45,lfoShape:1,glide:0,vcMix:.5,tempo:.4,swing:.5};
       this.cfg={tempoMode:1,assignMode:1,clockType:5,clockEdge:2};
       this.midi={vel:100,at:0,pb:0,cc1:0,cc2:0,cc4:0,cc7:100};
       this.ps={};for(const k of SM)this.ps[k]=this.p[k];
-      this.v=[];for(let i=0;i<16;i++)this.v.push(new Voice(2463534242+i*7919));
+      this.v=[];for(let i=0;i<16;i++){const v=new Voice(2463534242+i*7919);v.det=i?((i*0.6180339)%1-.5)*.006:0;this.v.push(v);}
       this.nv=1;this.inMap=new Int16Array(IN.length).fill(-1);this.nCables=0;
       this.lph=0;this.held=[];this.phys=new Set();this.susSet=new Set();this.uiSus=false;this.susEff=false;
       this.arpHeld=[];this.arp=false;this.arpIdx=0;this.arpLatch=false;
@@ -317,12 +331,12 @@ function makeEngine(){
       this.subLen=this.curDur/this.rN;this.gFrac=g>=8?.98:g/8;
       this.lastN=this.seqNote;this.lastA=acc;this.lastGl=gl;
     }
-    seqOn(n,acc,gl){if(this.seqNote>=0)this.rel(this.seqNote,'s');this.seqNote=n;this.alloc(n,'s',acc?1:.8,acc?1:0,gl);}
+    seqOn(n,acc,gl){if(this.seqNote>=0){this.rel(this.seqNote,'s');this.post({t:'nout',n:this.seqNote,on:false});}this.seqNote=n;this.alloc(n,'s',acc?1:.8,acc?1:0,gl);this.post({t:'nout',n,on:true,v:acc?127:100});}
     seqLegato(n,acc,gl){
-      if(this.nv===1){const v=this.v[0];this.seqNote=n;v.note=n;v.target=(n-60)/12;v.accent=acc?1:0;v.vel=acc?1:.8;v.glc=this.glc(gl);v.owner='s';v.gate=true;}
+      if(this.nv===1){const v=this.v[0];if(this.seqNote>=0&&this.seqNote!==n){this.post({t:'nout',n,on:true,v:acc?127:100});this.post({t:'nout',n:this.seqNote,on:false});}this.seqNote=n;v.note=n;v.target=(n-60)/12;v.accent=acc?1:0;v.vel=acc?1:.8;v.glc=this.glc(gl);v.owner='s';v.gate=true;}
       else this.seqOn(n,acc,gl);
     }
-    seqRelease(){if(this.seqNote>=0){this.rel(this.seqNote,'s');this.seqNote=-1;}}
+    seqRelease(){if(this.seqNote>=0){this.rel(this.seqNote,'s');this.post({t:'nout',n:this.seqNote,on:false});this.seqNote=-1;}}
     pulse(pps){
       if(!this.playing){this.sinceP=0;return;}
       const per=this.sinceP;this.sinceP=0;
@@ -376,6 +390,7 @@ function makeEngine(){
       this.cA=1-Math.exp(-1.5/(tA*sr));this.cD=1-Math.exp(-3/(tD*sr));
       const gt=p.glide*p.glide*2;this.cG=gt<.001?1:1-Math.exp(-1/(gt*sr));
       this.polyScale=1/Math.sqrt(this.nv);
+      for(let i=0;i<this.nv;i++){const v=this.v[i];v.dr=v.dr*.998+(Math.random()-.5)*.00012;}
       const hs=this.uiHold||(this.jackHold&&this.playing);this.holdStep=hs;
       const se=this.uiSus||(this.jackHold&&!this.playing);
       if(this.susEff&&!se){this.susEff=false;for(const n of this.susSet)if(!this.phys.has(n))this.kbRelease(n);this.susSet.clear();}else this.susEff=se;
@@ -396,14 +411,14 @@ function makeEngine(){
       this.seqTick(o0);
       const aCV=this.assignCV();
       const sh=p.shape,mSrc=p.modSrc,mDest=p.modDest,fSrc=p.vcfSrc,pol=p.vcfPol?-1:1,hp=p.fMode,vcaOn=p.vcaMode,susT=p.susOn?ps.sus:0;
-      const freqOff=(ps.freq-.5)*4,pwBase=.5+ps.pw*.45,cutBase=ps.cutoff*10,cA=this.cA,cD=this.cD,cG=this.cG;
+      const freqOff=(ps.freq-.5)*2,pwBase=.5+(ps.pw-.5)*.9,cutBase=ps.cutoff*10,cA=this.cA,cD=this.cD,cG=this.cG;
       let sum=0;
       for(let vi=0;vi<this.nv;vi++){
         const v=this.v[vi],o=v.o;
         if(!(vi===0||v.gate||v.stage!==0||((vcaOn||nCab)&&v.active)))continue;
         v.pitch+=(v.target-v.pitch)*(v.glc>0?v.glc:cG);
         let pv=im[I.oscCV]>=0?o[im[I.oscCV]]:v.pitch;if(!(pv===pv))pv=0;
-        pv+=freqOff;
+        pv+=freqOff+v.det+v.dr;
         if(im[I.oscFM]>=0)pv+=o[im[I.oscFM]]*.2;
         let g=v.gate;
         if(im[I.envGate]>=0)g=o[im[I.envGate]]>1.5;
@@ -422,7 +437,7 @@ function makeEngine(){
         let hz=261.6256*Math.pow(2,pv);if(hz>sr*.45)hz=sr*.45;
         const dt=hz/sr;
         let t=v.ph+dt;if(t>=1)t-=1;v.ph=t;
-        const saw=2*t-1-blep(t,dt);
+        const saw=1-2*t+blep(t,dt);
         let tp=t-pw;if(tp<0)tp+=1;
         const pul=(t<pw?1:-1)+blep(t,dt)-blep(tp,dt);
         let r=v.rnd;r^=r<<13;r^=r>>>17;r^=r<<5;r>>>=0;v.rnd=r;
@@ -487,8 +502,8 @@ const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const noteName=n=>NN[((n%12)+12)%12]+(Math.floor(n/12)-1);
 
 const PARAMS={
-  freq:{d:.5,lab:'FREQUENCY',f:v=>{const s=(v-.5)*48;return (s>=0?'+':'')+s.toFixed(1)+' semitoni';}},
-  pw:{d:0,lab:'PULSE WIDTH',f:v=>(50+v*45).toFixed(0)+' %'},
+  freq:{d:.5,lab:'FREQUENCY',f:v=>{const s=(v-.5)*24;return (s>=0?'+':'')+s.toFixed(1)+' semitoni';}},
+  pw:{d:.5,lab:'PULSE WIDTH',f:v=>(5+v*90).toFixed(0)+' %'+(Math.abs(v-.5)<.01?' (quadra)':v<.5?' (stretta)':' (larga)')},
   oscMod:{d:0,lab:'OSC MOD',f:pct},
   mix:{d:0,lab:'MIX',f:v=>'OSC '+Math.round((1-v)*100)+' / EXT·NOISE '+Math.round(v*100)},
   cutoff:{d:.55,lab:'CUTOFF',f:v=>hz(20*Math.pow(2,v*10))},
@@ -506,7 +521,7 @@ const PARAMS={
 };
 /* switches: [left label, left value],[right label, right value] — as on the panel */
 const SWITCHES={
-  shape:{d:1,lab:'SHAPE',L:['⊓',0],R:['⋀',1],n:['PULSE','SAW']},
+  shape:{d:1,lab:'SHAPE',L:['⊓',0],R:['◺',1],n:['PULSE','REVERSE SAW']},
   modSrc:{d:0,lab:'MOD SOURCE',L:['ENV',0],R:['LFO',1],n:['ENV','LFO']},
   modDest:{d:0,lab:'MOD DEST',L:['WIDTH',0],R:['FREQ',1],n:['WIDTH','FREQ']},
   fMode:{d:0,lab:'MODE',L:['LO',0],R:['HI',1],n:['LO (passa-basso)','HI (passa-alto)']},
@@ -534,7 +549,7 @@ function demoPattern(){
 const PRESETS={
   'Init':{},
   'Acid (con sequencer)':{p:{cutoff:.3,res:.78,vcfMod:.55,att:0,dec:.55,sus:0,glide:.15,vol:.65},s:{shape:1,susOn:0}},
-  'Lead PWM':{p:{pw:.25,oscMod:.5,lfoRate:.35,cutoff:.62,res:.25,vcfMod:.3,att:.1,dec:.55,sus:.75,glide:.25},s:{shape:0,modSrc:1,modDest:0}},
+  'Lead PWM':{p:{pw:.62,oscMod:.5,lfoRate:.35,cutoff:.62,res:.25,vcfMod:.3,att:.1,dec:.55,sus:.75,glide:.25},s:{shape:0,modSrc:1,modDest:0}},
   'Pad polifonico (8 voci)':{p:{att:.7,dec:.75,sus:.8,cutoff:.5,res:.15,vcfMod:.25,oscMod:.03,lfoRate:.42,glide:.15,vol:.75},s:{shape:1,modSrc:1,modDest:1},nv:8},
   'Basso percussivo':{p:{cutoff:.28,res:.4,vcfMod:.5,att:0,dec:.45,sus:.3,vol:.75},s:{shape:0,susOn:1}},
   'Rumore percussivo':{p:{mix:1,cutoff:.62,res:.55,vcfMod:.45,att:0,dec:.35,sus:0},s:{susOn:0,fMode:1}},
@@ -545,14 +560,14 @@ const PRESETS={
 };
 
 /* ===================== STATE ===================== */
-const state={p:{},s:{},cables:[],nv:1,pats:[],work:null,bank:0,pat:0,zoom:1,kb:window.innerHeight>600,cfg:{tempoMode:1,assignMode:1,clockType:5,clockEdge:2}};
+const state={p:{},s:{},cables:[],nv:1,pats:[],work:null,bank:0,pat:0,zoom:1,kb:window.innerHeight>600,cfg:{tempoMode:1,assignMode:1,clockType:5,clockEdge:2},midi:{ch:1,out:'',thru:true,notes:false}};
 for(const k in PARAMS)state.p[k]=PARAMS[k].d;
 for(const k in SWITCHES)state.s[k]=SWITCHES[k].d;
 for(let i=0;i<64;i++)state.pats.push(i===0?demoPattern():blankPattern());
 const ui={mode:'kybd',shift:false,shiftHeld:false,shiftUsed:false,page:0,autoPage:true,sel:-1,rec:false,recPos:0,recN:0,playing:false,arp:false,arpLatch:false,sus:false,kbBase:48,pend:null,cur:-1,
   patSel:null,setEnd:false,hold:false,mute:false,accAll:false,rev:false,ratchet:1,ledShow:null,ledT:0,down:new Map(),lastPress:{},setMode:null,saveMode:null};
 try{const sv=JSON.parse(localStorage.getItem('s3340-v3')||'null');if(sv){Object.assign(state.p,sv.p||{});Object.assign(state.s,sv.s||{});state.cables=sv.cables||[];state.nv=sv.nv||1;
-  if(sv.pats&&sv.pats.length===64)state.pats=sv.pats;state.work=sv.work||null;state.bank=sv.bank||0;state.pat=sv.pat||0;state.zoom=sv.zoom||1;state.kb=sv.kb!==false;Object.assign(state.cfg,sv.cfg||{});}}catch(e){}
+  if(sv.pats&&sv.pats.length===64)state.pats=sv.pats;state.work=sv.work||null;state.bank=sv.bank||0;state.pat=sv.pat||0;state.zoom=sv.zoom||1;state.kb=sv.kb!==false;Object.assign(state.cfg,sv.cfg||{});Object.assign(state.midi,sv.midi||{});}}catch(e){}
 const fixP=P=>{P.steps.forEach(s=>{if(s.g==null)s.g=4;if(s.rt==null)s.rt=1;s.gl=+s.gl||0;});if(P.sw==null)P.sw=.5;};
 state.pats.forEach(fixP);if(!state.work)state.work=JSON.parse(JSON.stringify(state.pats[state.bank*8+state.pat]));fixP(state.work);
 let saveT=0;
@@ -597,6 +612,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx&&ctx.
 function onEngine(m){
   if(m.t==='st'){ui.cur=m.i;if(ui.playing&&ui.autoPage&&!ui.rec&&m.i>=0)ui.page=Math.floor(m.i/8);renderSeq();}
   else if(m.t==='pl'){ui.playing=m.v;if(!m.v){ui.cur=-1;ui.hold=false;}renderSeq();}
+  else if(m.t==='nout'){noteOut(m.n,m.on,m.v);}
   else if(m.t==='lfo'){const l=$('lfoLed');if(l)l.style.opacity=.12+.88*(m.v*.5+.5);}
 }
 function lcd(t){$('lcd').textContent=t;}
@@ -963,8 +979,9 @@ function buildKb(){
   for(const n in down)if(keyEls[n])keyEls[n].classList.add('down');
   renderSeq();
 }
-function keyOn(n,vel){
+function keyOn(n,vel,fromMidi){
   down[n]=(down[n]||0)+1;if(down[n]>1)return;
+  if(!fromMidi&&!ui.playing&&!ui.arp)noteOut(n,true,Math.round((vel||.8)*127));
   if(keyEls[n])keyEls[n].classList.add('down');
   send({t:'on',n,vel:vel||.8});
   if(ui.setMode)return;
@@ -974,7 +991,7 @@ function keyOn(n,vel){
   else if(ui.playing&&!ui.arp)lcd('Trasposizione '+((n-60)>=0?'+':'')+(n-60)+' semitoni');
   else lcd('Nota '+noteName(n));
 }
-function keyOff(n){if(!down[n])return;down[n]--;if(down[n]>0)return;delete down[n];if(keyEls[n])keyEls[n].classList.remove('down');send({t:'off',n});}
+function keyOff(n,fromMidi){if(!down[n])return;down[n]--;if(down[n]>0)return;delete down[n];if(!fromMidi)noteOut(n,false);if(keyEls[n])keyEls[n].classList.remove('down');send({t:'off',n});}
 function setupKb(){
   const kb=$('kb'),ptr=new Map();
   const noteAt=e=>{const t=document.elementFromPoint(e.clientX,e.clientY);return t&&t.dataset&&t.dataset.n!=null&&kb.contains(t)?+t.dataset.n:null;};
@@ -999,29 +1016,47 @@ function setupKb(){
 function applyKbVis(){$('kbdock').classList.toggle('hide',!state.kb);$('kbToggle').classList.toggle('on2',state.kb);if(state.kb)buildKb();}
 
 /* ===================== MIDI ===================== */
-let midiDone=false;
+let midiAcc=null,midiOut=null,midiFl=0;
 function initMidi(){
-  if(midiDone)return;midiDone=true;const st=$('midiSt');
+  if(midiAcc!==null)return;midiAcc=false;const st=$('midiSt');
   if(!navigator.requestMIDIAccess){st.textContent='MIDI n/d';return;}
-  navigator.requestMIDIAccess().then(acc=>{
-    const hook=()=>{let c=0;acc.inputs.forEach(i=>{i.onmidimessage=onMidi;c++;});st.textContent='MIDI '+c;st.style.opacity=c?1:.7;};
+  navigator.requestMIDIAccess().then(acc=>{midiAcc=acc;
+    const hook=()=>{let c=0;acc.inputs.forEach(i=>{i.onmidimessage=onMidi;c++;});st.textContent='MIDI '+c+' IN';st.classList.toggle('on2',c>0);fillOuts();};
     hook();acc.onstatechange=hook;
   }).catch(()=>{st.textContent='MIDI n/d';});
 }
+function fillOuts(){
+  const sel=$('mOut');if(!sel)return;const cur=state.midi.out;sel.innerHTML='<option value="">nessuna</option>';
+  if(midiAcc)midiAcc.outputs.forEach(o=>{const op=document.createElement('option');op.value=o.id;op.textContent=o.name;sel.appendChild(op);});
+  sel.value=cur;midiOut=midiAcc&&cur?midiAcc.outputs.get(cur)||null:null;
+}
+function midiSend(bytes){if(midiOut){try{midiOut.send(bytes);}catch(e){}}}
+function noteOut(n,on,vel){if(!state.midi.notes||!midiOut||n<0||n>127)return;const ch=(state.midi.ch-1)&15;midiSend(on?[0x90|ch,n,vel||100]:[0x80|ch,n,0]);}
 const CCMAP={74:'cutoff',71:'res',5:'glide',73:'att',75:'dec',72:'sus',76:'lfoRate',77:'vcfMod',70:'pw',78:'mix'};
 const CCASSIGN={1:'cc1',2:'cc2',4:'cc4',7:'cc7'};
-let midiFl=0;
 function onMidi(e){
-  const [s,d1,d2]=e.data,c=s&0xf0;
+  const d=e.data,s=d[0],d1=d[1],d2=d[2],c=s&0xf0,ch=(s&15)+1;
+  if(state.midi.thru)midiSend(d);
   if(s===0xF8){send({t:'mclk'});return;}
   if(s===0xFA){send({t:'mstart'});return;}if(s===0xFC){send({t:'mstop'});return;}if(s===0xFB){send({t:'mcont'});return;}
   if(s>=0xF0)return;
+  if(ch!==state.midi.ch)return;
   const din=$('midiIn');if(din){din.classList.add('act');clearTimeout(midiFl);midiFl=setTimeout(()=>din.classList.remove('act'),120);}
-  if(c===0x90&&d2>0){send({t:'midi',k:'vel',v:d2});keyOn(d1,.5+d2/254);}
-  else if(c===0x80||(c===0x90&&d2===0))keyOff(d1);
+  if(c===0x90&&d2>0){send({t:'midi',k:'vel',v:d2});keyOn(d1,.5+d2/254,true);}
+  else if(c===0x80||(c===0x90&&d2===0))keyOff(d1,true);
   else if(c===0xD0)send({t:'midi',k:'at',v:d1});
   else if(c===0xE0)send({t:'midi',k:'pb',v:((d2<<7)|d1)-8192});
   else if(c===0xB0){if(CCASSIGN[d1])send({t:'midi',k:CCASSIGN[d1],v:d2});if(CCMAP[d1])setParam(CCMAP[d1],d2/127);if(d1===123||d1===120)send({t:'panic'});}
+}
+function setupMidiDlg(){
+  const ch=$('mCh');for(let i=1;i<=16;i++){const o=document.createElement('option');o.value=i;o.textContent='Canale '+i;ch.appendChild(o);}
+  ch.value=state.midi.ch;ch.onchange=()=>{state.midi.ch=+ch.value;saveSoon();lcd('MIDI IN sul canale '+state.midi.ch);};
+  $('mOut').onchange=()=>{state.midi.out=$('mOut').value;fillOuts();saveSoon();};
+  $('mThru').checked=state.midi.thru;$('mThru').onchange=()=>{state.midi.thru=$('mThru').checked;saveSoon();};
+  $('mNotes').checked=state.midi.notes;$('mNotes').onchange=()=>{state.midi.notes=$('mNotes').checked;saveSoon();};
+  $('midiSt').onclick=()=>{startAudio();initMidi();fillOuts();$('midiDlg').classList.add('show');};
+  $('midiClose').onclick=()=>$('midiDlg').classList.remove('show');
+  $('midiDlg').addEventListener('click',e=>{if(e.target.id==='midiDlg')$('midiDlg').classList.remove('show');});
 }
 
 /* ===================== HEADER ===================== */
@@ -1055,16 +1090,15 @@ function setupHeader(){
   $('nvVal').textContent=state.nv===1?'1 MONO':state.nv+' VOCI';
 }
 
-buildPanel();setupPatch();setupSeq();setupKb();setupHeader();
+buildPanel();setupPatch();setupSeq();setupKb();setupHeader();setupMidiDlg();
 if(!ZL.includes(state.zoom))state.zoom=1;
 fit();new ResizeObserver(fit).observe($('stage'));window.addEventListener('resize',fit);
 applyKbVis();drawCables();markJacks();
 </script>
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').then(r=>{
-  const lcdEl=document.getElementById('lcd');
-  if(navigator.serviceWorker.controller&&lcdEl)lcdEl.textContent='Pronto (offline disponibile)';
-  r.addEventListener('updatefound',()=>{const w=r.installing;w&&w.addEventListener('statechange',()=>{if(w.state==='installed'&&lcdEl)lcdEl.textContent=navigator.serviceWorker.controller?'Nuova versione scaricata: riapri l\'app per usarla':'Pronta per l\'uso offline';});});
+  const l=document.getElementById('lcd');
+  r.addEventListener('updatefound',()=>{const w=r.installing;w&&w.addEventListener('statechange',()=>{if(w.state==='installed'&&l)l.textContent=navigator.serviceWorker.controller?'Nuova versione scaricata: chiudi e riapri l\'app':'Pronta per l\'uso offline';});});
 }).catch(()=>{});});}
 </script>
 </body>
