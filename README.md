@@ -80,3 +80,7 @@ The simulator is a PWA: after the first visit it also works without a connection
 ## Technical notes
 
 The audio engine runs in an AudioWorklet at the full sample rate: polyBLEP anti-aliased oscillators, zero-delay-feedback (ZDF) ladder filter with saturation, exponential envelopes, patch bay processed sample by sample.
+
+## Credits
+
+Developed with the assistance of AI. Design choices, testing and final review by the author.
