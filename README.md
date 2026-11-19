@@ -54,16 +54,6 @@ Il simulatore è una PWA: dopo la prima apertura funziona anche senza connession
 
 Dopo un aggiornamento dei file su GitHub, apri l'app una volta con la connessione attiva per scaricare la nuova versione.
 
-## File
-
-| File | Contenuto |
-|---|---|
-| `index.html` | Il simulatore completo (interfaccia, motore audio, font incorporati) |
-| `sw.js` | Service worker per l'uso offline |
-| `manifest.webmanifest` | Dati dell'app installabile |
-| `icon-*.png` | Icone dell'app |
-| `OFL-*.txt` | Licenze dei font Barlow e JetBrains Mono (SIL Open Font License) |
-
 ## Compatibilità
 
 - Audio: Chrome, Edge, Firefox, Safari recenti (AudioWorklet, con ripiego automatico se non disponibile).
