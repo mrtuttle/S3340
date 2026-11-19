@@ -16,7 +16,7 @@ Simulatore da browser di un sintetizzatore semi-modulare analogico con schema is
 - **Arpeggiatore**, HOLD, trasposizione dal vivo.
 - **Poly Chain**: da 1 a 16 voci.
 - **Impostazioni** del sequencer: tempo input (1PPS, 2PPQ, 24/48 PPQN, CV), assign out, tipo e fronte del clock.
-- **MIDI** in/out tramite Web MIDI (canale, THRU, invio note).
+- **MIDI** in/out tramite Web MIDI (canale, THRU, invio note e clock MIDI con start/stop).
 - **Tastiera a schermo** e tastiera del computer (A W S E D F …, Z/X per l'ottava, spazio = PLAY).
 - **Preset** di fabbrica e **preset personali**, con esportazione e importazione della **sessione completa**.
 
@@ -33,11 +33,13 @@ Dal menu **PRESET**:
 
 | Voce | Cosa fa |
 |---|---|
-| ＋ Salva il suono attuale… | Salva manopole, levette, cavi e voci con un nome (anche col pulsante SALVA) |
+| ＋ Salva il suono attuale… | Salva manopole, levette, cavi e voci con un nome (anche col pulsante SALVA); a scelta anche il pattern su cui stai lavorando |
 | ★ nome | Richiama un tuo preset |
 | ✕ Elimina «nome» | Elimina il preset caricato |
 | ⇩ Esporta sessione | Crea `S3340-sessione.json` con preset, suono attuale, tempo, i 64 pattern e le impostazioni |
 | ⇧ Importa sessione o preset | Aggiunge i preset del file e, se confermi, ripristina la sessione |
+
+Ogni preset di fabbrica porta con sé un pattern d'esempio: caricandolo, il pattern va nel pattern di lavoro (premi PLAY/STOP per sentirlo) e i banchi salvati non vengono toccati. Se il pattern di lavoro ha modifiche non salvate, il simulatore chiede prima se sostituirlo o caricare solo il suono.
 
 I **pattern** del sequencer hanno una memoria propria (8 banchi × 8 pattern): si salvano tenendo **SHIFT + PLAY per 2 secondi**, scegliendo il pattern coi pad (PATTERN + pad per il banco) e confermando con **SHIFT + REC**.
 
