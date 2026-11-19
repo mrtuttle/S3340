@@ -72,25 +72,6 @@ The simulator is a PWA: after the first visit it also works without a connection
 - **iPhone / iPad (Safari)**: open the page, tap Share → **Add to Home Screen**.
 - **Android (Chrome)**: menu ⋮ → **Install app**.
 
-After updating the files on GitHub, open the app once while online to download the new version.
-
-## Publishing on GitHub Pages
-
-1. Upload the contents of this folder to the repository (it must be **public**, unless your plan allows Pages on private repositories).
-2. Settings → **Pages** → Source: *Deploy from a branch*, branch `main`, folder `/ (root)`.
-3. After a couple of minutes the page is available at the address shown by GitHub.
-
-## Files
-
-| File | Contents |
-|---|---|
-| `index.html` | The complete simulator (interface, audio engine, embedded fonts) |
-| `sw.js` | Service worker for offline use |
-| `manifest.webmanifest` | Installable app data |
-| `icon-*.png` | App icons |
-| `OFL-*.txt` | Licenses of the Barlow and JetBrains Mono fonts (SIL Open Font License) |
-| `README.md`, `README.it.md` | This guide in English and Italian |
-
 ## Compatibility
 
 - Audio: recent Chrome, Edge, Firefox and Safari (AudioWorklet, with an automatic fallback when unavailable).
