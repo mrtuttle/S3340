@@ -54,12 +54,6 @@ Il simulatore è una PWA: dopo la prima apertura funziona anche senza connession
 
 Dopo un aggiornamento dei file su GitHub, apri l'app una volta con la connessione attiva per scaricare la nuova versione.
 
-## Pubblicazione su GitHub Pages
-
-1. Carica il contenuto di questa cartella nel repository (deve essere **pubblico**, o serve un piano che consenta Pages su repository privati).
-2. Settings → **Pages** → Source: *Deploy from a branch*, branch `main`, cartella `/ (root)`.
-3. Dopo un paio di minuti la pagina è disponibile all'indirizzo indicato da GitHub.
-
 ## File
 
 | File | Contenuto |
