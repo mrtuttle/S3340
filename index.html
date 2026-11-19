@@ -186,6 +186,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
   <button class="btn" id="pwrBtn">⏻ AUDIO</button>
   <div class="grp"><span>POLY CHAIN</span><button class="btn" id="nvDn">−</button><b id="nvVal">1 MONO</b><button class="btn" id="nvUp">+</button></div>
   <select class="btn" id="preset"></select>
+  <button class="btn" id="savePre">SALVA</button>
   <button class="btn" id="clrCab">STACCA CAVI</button>
   <button class="btn" id="fadeCab">CAVI</button>
   <div class="grp"><span>ZOOM</span><button class="btn" id="zDn">−</button><b id="zVal">ADATTA</b><button class="btn" id="zUp">+</button></div>
@@ -607,7 +608,7 @@ function pushAll(){
   send({t:'cfg',v:state.cfg});send({t:'mute',v:ui.mute});send({t:'accAll',v:ui.accAll});send({t:'rev',v:ui.rev});send({t:'ratchet',v:ui.ratchet});
 }
 function updPwr(){const on=!!ctx&&ctx.state==='running';$('pwrBtn').classList.toggle('on2',on);const l=$('powerLed');if(l)l.className='sled c'+(on?' y':'');}
-document.addEventListener('pointerdown',()=>{if(ctx&&ctx.state!=='running')ctx.resume().then(updPwr);},true);
+const wakeAudio=()=>{if(ctx&&ctx.state!=='running')ctx.resume().then(updPwr).catch(()=>{});};['pointerdown','pointerup','touchend','click','keydown'].forEach(t=>document.addEventListener(t,wakeAudio,true));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx&&ctx.state!=='running')ctx.resume().then(updPwr).catch(()=>{});});
 function onEngine(m){
   if(m.t==='st'){ui.cur=m.i;if(ui.playing&&ui.autoPage&&!ui.rec&&m.i>=0)ui.page=Math.floor(m.i/8);renderSeq();}
@@ -1061,8 +1062,51 @@ function setupMidiDlg(){
 
 /* ===================== HEADER ===================== */
 function setNv(n){state.nv=Math.max(1,Math.min(16,n));$('nvVal').textContent=state.nv===1?'1 MONO':state.nv+' VOCI';send({t:'nv',v:state.nv});saveSoon();}
-function applyPreset(name){
-  const P=PRESETS[name];if(!P)return;
+const UKEY='s3340-user',UAPP='s3340',UFILE='S3340-preset.json';const SNAP=()=>({p:{...state.p},s:{...state.s},cables:state.cables.map(c=>[c[0],c[1]]),nv:state.nv});
+/* ---------- preset utente ---------- */
+const SESS=()=>({p:{...state.p},s:{...state.s},cables:state.cables.map(c=>[c[0],c[1]]),nv:state.nv,pats:state.pats,work:state.work,bank:state.bank,pat:state.pat,cfg:{...state.cfg}});const LSKEY='s3340-v3';const okSess=se=>se&&typeof se.p==='object'&&(!se.pats||Array.isArray(se.pats)&&se.pats.length===64);
+let UP={},curUser=null;try{UP=JSON.parse(localStorage.getItem(UKEY)||'{}')||{};}catch(e){UP={};}
+function saveUP(){try{localStorage.setItem(UKEY,JSON.stringify(UP));return true;}catch(e){lcd('Impossibile salvare: memoria del browser piena o bloccata');return false;}}
+function fillPresets(){const sel=$('preset');sel.innerHTML='';
+  const opt=(v,t,par)=>{const o=document.createElement('option');o.value=v;o.textContent=t;(par||sel).appendChild(o);return o;};
+  const grp=l=>{const g=document.createElement('optgroup');g.label=l;sel.appendChild(g);return g;};
+  opt('','PRESET…');const gf=grp('Di fabbrica');Object.keys(PRESETS).forEach(k=>opt(k,k,gf));
+  const names=Object.keys(UP).sort((a,b)=>a.localeCompare(b));
+  if(names.length){const gu=grp('I miei preset');names.forEach(n=>opt('u:'+n,'★ '+n,gu));}
+  const gm=grp('Gestione');opt('!save','＋ Salva il suono attuale…',gm);
+  if(curUser&&UP[curUser])opt('!del','✕ Elimina «'+curUser+'»',gm);
+  opt('!exp','⇩ Esporta sessione (preset, pattern, impostazioni)',gm);
+  opt('!imp','⇧ Importa sessione o preset da file…',gm);}
+function saveUser(){let n=prompt('Nome del preset:',curUser||'');if(n==null)return;n=n.trim().slice(0,40);if(!n){lcd('Nome vuoto: preset non salvato');return;}
+  if(UP[n]&&n!==curUser&&!confirm('Esiste già un preset «'+n+'». Lo sovrascrivo?'))return;
+  UP[n]=SNAP();if(!saveUP())return;curUser=n;fillPresets();lcd('Preset salvato: '+n);}
+function delUser(){const n=curUser;if(!n||!UP[n])return;if(!confirm('Elimino il preset «'+n+'»?'))return;delete UP[n];saveUP();curUser=null;fillPresets();lcd('Preset eliminato: '+n);}
+function restoreSession(se){clearTimeout(saveT);const cur=JSON.parse(JSON.stringify(state));for(const k in se){if(k==='p'||k==='s'||k==='cfg')cur[k]={...(cur[k]||{}),...se[k]};else cur[k]=se[k];}
+  cur.cables=(se.cables||[]).map((c,i)=>[c[0],c[1],i]);try{localStorage.setItem(LSKEY,JSON.stringify(cur));}catch(e){lcd('Impossibile ripristinare: memoria del browser piena o bloccata');return;}
+  lcd('Sessione ripristinata: ricarico…');setTimeout(()=>location.reload(),300);}
+async function expUser(){const txt=JSON.stringify({app:UAPP,v:2,saved:new Date().toISOString(),presets:UP,session:SESS()},null,1);
+  const fn=UFILE.replace('preset','sessione');const msg='Sessione esportata in '+fn+' ('+Object.keys(UP).length+' preset'+(LSKEY==='s3340-v3'?', 64 pattern':'')+')';
+  if(window.claude&&typeof window.claude.use==='function'){let dl=null;try{dl=await window.claude.use('downloads');}catch(e){}
+    if(dl){try{await dl.save({filename:fn,data:txt});lcd(msg);}catch(e){lcd(e&&e.code==='declined'?'Esportazione annullata':'Esportazione non disponibile qui');}return;}}
+  const blob=new Blob([txt],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);lcd(msg);}
+function impUser(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;f.text().then(t=>{let d;try{d=JSON.parse(t);}catch(e){lcd('File non valido');return;}
+    if(!d||d.app!==UAPP||typeof d.presets!=='object'){lcd('Questo file non contiene dati di questo simulatore');return;}
+    let c=0;for(const n in d.presets){const P=d.presets[n];if(P&&typeof P.p==='object'&&n.trim()){UP[n.trim().slice(0,40)]=P;c++;}}
+    saveUP();fillPresets();
+    if(okSess(d.session)&&confirm('Il file contiene anche la sessione salvata'+(d.saved?' il '+new Date(d.saved).toLocaleString('it-IT'):'')+' (suono'+(LSKEY==='s3340-v3'?', pattern e impostazioni':' e sequenza')+').\nRipristinarla? Sostituisce quella attuale.')){restoreSession(d.session);return;}
+    lcd('Importati '+c+' preset');});};inp.click();}
+function setupPresetMenu(){const sel=$('preset');fillPresets();
+  sel.onchange=()=>{const v=sel.value;sel.value='';sel.blur();if(!v)return;
+    if(v==='!save'){saveUser();return;}if(v==='!del'){delUser();return;}if(v==='!exp'){expUser();return;}if(v==='!imp'){impUser();return;}
+    startAudio();
+    if(v.startsWith('u:')){const n=v.slice(2);if(!UP[n])return;applyPreset(n,UP[n]);curUser=n;fillPresets();lcd('Preset: ★ '+n);return;}
+    applyPreset(v);curUser=null;fillPresets();};
+  $('savePre').onclick=saveUser;}
+function applyPreset(name,P){
+  P=P||PRESETS[name];if(!P)return;
   for(const k in PARAMS)if(k!=='tempo'&&k!=='swing')state.p[k]=PARAMS[k].d;
   for(const k in SWITCHES)state.s[k]=SWITCHES[k].d;
   Object.assign(state.p,P.p||{});Object.assign(state.s,P.s||{});
@@ -1073,8 +1117,8 @@ function applyPreset(name){
   lcd('Preset: '+name+(name.startsWith('Acid')||name.startsWith('Clock')?' · premi PLAY/STOP':''));
 }
 function setupHeader(){
-  const sel=$('preset');sel.innerHTML='<option value="">PRESET…</option>'+Object.keys(PRESETS).map(k=>`<option>${k}</option>`).join('');
-  sel.onchange=()=>{startAudio();applyPreset(sel.value);sel.value='';};
+  setupPresetMenu();
+  
   $('nvDn').onclick=()=>setNv(state.nv-1);$('nvUp').onclick=()=>setNv(state.nv+1);
   $('clrCab').onclick=()=>{state.cables=[];ui.pend=null;sendCables();markJacks();lcd('Tutti i cavi staccati');};
   $('fadeCab').onclick=()=>{const c=$('cables');c.classList.toggle('faint');$('fadeCab').classList.toggle('on2',c.classList.contains('faint'));};
