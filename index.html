@@ -255,6 +255,7 @@ function makeEngine(){
         case 'taps':this.tp=(m.list||[]).map(k=>O[k]).filter(i=>i!=null);this.tacc=new Float32Array(this.tp.length*2);for(let j=0;j<this.tp.length;j++){this.tacc[j*2]=-1e9;this.tacc[j*2+1]=1e9;}this.tw=0;break;
         case 'pat':this.pat={len:Math.max(1,Math.min(32,m.len|0)),steps:m.steps};break;
         case 'play':{const on=m.v==null?!this.playing:!!m.v;if(on&&!this.playing)this.seqStart();else if(!on&&this.playing)this.seqStop();break;}
+        case 'oct':if(this.playing&&!this.arp)this.transpose=Math.max(-48,Math.min(48,this.transpose+(m.d|0)));break;
         case 'reset':this.step=-1;this.transpose=0;if(this.playing){this.advance();}break;
         case 'arp':this.arp=!!m.v;this.arpHeld=[];this.arpLatch=!!m.latch;if(this.playing)this.seqStop();break;
         case 'arpLatch':this.arpLatch=!!m.v;if(!this.arpLatch){this.arpHeld=this.arpHeld.filter(n=>this.phys.has(n));if(!this.arpHeld.length&&this.playing&&this.arp)this.seqStop();}break;
@@ -927,7 +928,7 @@ function arrow(d){
   const sv=ui.saveMode;
   if(ui.patSel==='bank'){if(sv){sv.bank=(sv.bank+d+8)%8;lcd('SALVA in banco '+(sv.bank+1));}else{loadPattern((state.bank+d+8)%8,state.pat);lcd('Banco '+(state.bank+1));}}
   else if(ui.patSel==='pattern'){if(sv){sv.pat=(sv.pat+d+8)%8;lcd('SALVA in pattern '+(sv.pat+1));}else{loadPattern(state.bank,(state.pat+d+8)%8);lcd('Pattern '+(state.pat+1));}}
-  else{ui.kbBase=Math.max(12,Math.min(96,ui.kbBase+12*d));buildKb();lcd('Ottava: '+noteName(ui.kbBase));flashLeds('one',ui.kbBase/12-1,'r',900);}
+  else{const ob=ui.kbBase;ui.kbBase=Math.max(12,Math.min(96,ui.kbBase+12*d));buildKb();const moved=ui.kbBase!==ob;if(moved&&ui.playing&&!ui.arp)send({t:'oct',d:ui.kbBase-ob});lcd('Ottava: '+noteName(ui.kbBase)+(moved&&ui.playing&&!ui.arp?' · sequencer trasposto':''));flashLeds('one',ui.kbBase/12-1,'r',900);}
   renderSeq();
 }
 function toggleRec(){
@@ -1290,7 +1291,7 @@ const I18N=[
 ['MIDI OUT/THRU: non disponibile nel browser','MIDI OUT/THRU: not available in the browser'],
 ['Modifiche annullate: richiamato il pattern salvato (PATTERN+RESET)','Changes undone: saved pattern recalled (PATTERN+RESET)'],
 ['Modo KEYBOARD: i pad suonano le note','KEYBOARD mode: the pads play notes'],['Modo STEP: SHIFT+pad per modificare uno step','STEP mode: SHIFT+pad to edit a step'],
-['Mute disattivato','Mute off'],['Nome vuoto: preset non salvato','Empty name: preset not saved'],['Nota ','Note '],['Ottava: ','Octave: '],
+['Mute disattivato','Mute off'],['Nome vuoto: preset non salvato','Empty name: preset not saved'],['Nota ','Note '],['Ottava: ','Octave: '],[' · sequencer trasposto',' · sequencer transposed'],
 ['PHONES: uscita audio verso cuffie/altoparlanti del dispositivo','PHONES: audio output to the device headphones/speakers'],
 ['PHONES: uscita audio verso gli altoparlanti / cuffie del dispositivo','PHONES: audio output to the device speakers / headphones'],
 ['Pagina automatica','Automatic page'],['Pagina ','Page '],['Panic: tutte le note spente','Panic: all notes off'],
