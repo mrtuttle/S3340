@@ -64,3 +64,7 @@ Il simulatore è una PWA: dopo la prima apertura funziona anche senza connession
 ## Note tecniche
 
 Il motore audio gira in un AudioWorklet a frequenza di campionamento piena: oscillatori con anti-aliasing polyBLEP, filtro ladder a ritardo zero (ZDF) con saturazione, inviluppi esponenziali, patch bay elaborata campione per campione.
+
+## Crediti
+
+Sviluppato con l'assistenza dell'intelligenza artificiale. Scelte di progetto, prove e revisione finale a cura dell'autore.
