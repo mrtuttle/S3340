@@ -52,6 +52,22 @@ Il simulatore è una PWA: dopo la prima apertura funziona anche senza connession
 
 Dopo un aggiornamento dei file su GitHub, apri l'app una volta con la connessione attiva per scaricare la nuova versione.
 
+## Pubblicazione su GitHub Pages
+
+1. Carica il contenuto di questa cartella nel repository (deve essere **pubblico**, o serve un piano che consenta Pages su repository privati).
+2. Settings → **Pages** → Source: *Deploy from a branch*, branch `main`, cartella `/ (root)`.
+3. Dopo un paio di minuti la pagina è disponibile all'indirizzo indicato da GitHub.
+
+## File
+
+| File | Contenuto |
+|---|---|
+| `index.html` | Il simulatore completo (interfaccia, motore audio, font incorporati) |
+| `sw.js` | Service worker per l'uso offline |
+| `manifest.webmanifest` | Dati dell'app installabile |
+| `icon-*.png` | Icone dell'app |
+| `OFL-*.txt` | Licenze dei font Barlow e JetBrains Mono (SIL Open Font License) |
+
 ## Compatibilità
 
 - Audio: Chrome, Edge, Firefox, Safari recenti (AudioWorklet, con ripiego automatico se non disponibile).
