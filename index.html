@@ -193,6 +193,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
   <div class="grp"><span>ZOOM</span><button class="btn" id="zDn">−</button><b id="zVal">ADATTA</b><button class="btn" id="zUp">+</button></div>
   <button class="btn" id="fsBtn">⛶</button>
   <button class="btn" id="panic">PANIC</button>
+  <button class="btn" id="langBtn" title="Passa all’italiano">IT</button>
   <button class="btn" id="helpBtn">?</button>
   <button class="btn" id="midiSt">MIDI –</button>
   <div class="lcd" id="lcd">Pronto.</div>
@@ -1175,6 +1176,194 @@ buildPanel();setupPatch();setupSeq();setupKb();setupHeader();setupMidiDlg();
 if(!ZL.includes(state.zoom))state.zoom=1;
 fit();new ResizeObserver(fit).observe($('stage'));window.addEventListener('resize',fit);
 applyKbVis();drawCables();markJacks();
+/* ===================== LINGUA / LANGUAGE (EN · IT) ===================== */
+const I18N=[
+/* ---- start overlay, header, menus ---- */
+['Simulatore semi-modulare con lo stesso schema di comandi del Behringer Crave (progetto non ufficiale): VCO 3340, filtro ladder, patchbay a 32 punti, sequencer a 32 step, Poly Chain fino a 16 voci.','Semi-modular synthesizer simulator with the same control layout as the Behringer Crave (unofficial project): 3340 VCO, ladder filter, 32-point patch bay, 32-step sequencer, Poly Chain up to 16 voices.'],
+['Simulatore percussivo semi-modulare con lo stesso schema di comandi del Behringer EDGE (progetto non ufficiale): 2 VCO con FM e sync, rumore bianco/rosa, filtro ladder LP/HP, tre inviluppi, sequencer doppio a 8 step fino a 10.000 BPM, patchbay 15×10.','Semi-modular percussion synthesizer simulator with the same control layout as the Behringer EDGE (unofficial project): 2 VCOs with FM and sync, white/pink noise, LP/HP ladder filter, three envelopes, dual 8-step sequencer up to 10,000 BPM, 15×10 patch bay.'],
+['▶ Accendi','▶ Switch on'],
+['Sul telefono gira in orizzontale. Su iPhone disattiva la modalità silenziosa.','On a phone, turn it sideways. On iPhone, turn off silent mode.'],
+['schema Behringer Crave · non ufficiale','Behringer Crave layout · unofficial'],
+['schema Behringer EDGE · non ufficiale','Behringer EDGE layout · unofficial'],
+['STACCA CAVI','CLEAR CABLES'],['CAVI','CABLES'],['SALVA','SAVE'],['ADATTA','FIT'],
+['↻ Ruota il telefono in orizzontale per avere il pannello più grande, oppure usa ZOOM e scorri.','↻ Turn the phone sideways for a bigger panel, or use ZOOM and scroll.'],
+['tastiera extra (anche A W S E D F… sul computer)','extra keyboard (also A W S E D F… on a computer)'],
+['come una tastiera MIDI: intonazione + trigger (A W S E D F… sul computer)','like a MIDI keyboard: pitch + trigger (A W S E D F… on a computer)'],
+['TASTIERA','KEYBOARD'],
+['Pronto. Premi Accendi, poi PLAY/STOP.','Ready. Press Switch on, then PLAY/STOP.'],['Pronto.','Ready.'],
+['PRESET…','PRESET…'],['Di fabbrica','Factory'],['I miei preset','My presets'],['Gestione','Manage'],
+['＋ Salva il suono attuale…','＋ Save current sound…'],
+['⇩ Esporta sessione (preset, pattern, impostazioni)','⇩ Export session (presets, patterns, settings)'],
+['⇩ Esporta sessione (preset e suono attuale)','⇩ Export session (presets and current sound)'],
+['⇧ Importa sessione o preset da file…','⇧ Import session or presets from file…'],
+['✕ Elimina «','✕ Delete «'],
+/* ---- factory preset names ---- */
+['Acid (con sequencer)','Acid (with sequencer)'],['Pad polifonico (8 voci)','Polyphonic pad (8 voices)'],['Basso percussivo','Percussive bass'],['Rumore percussivo','Percussive noise'],
+['Sirena (LFO TRI → OSC FM)','Siren (LFO TRI → OSC FM)'],['Metallico (OSC SAW → VCF CUTOFF)','Metallic (OSC SAW → VCF CUTOFF)'],['Clock da LFO (LFO SQU → TEMPO)','Clock from LFO (LFO SQU → TEMPO)'],
+['Drone (VCA ON, LFO → filtro)','Drone (VCA ON, LFO → filter)'],
+['Init (impostazione di partenza)','Init (starting point)'],['Cassa 808 (filtro auto-oscillante)','808 kick (self-oscillating filter)'],['Cassa + rullante (stile DFAM)','Kick + snare (DFAM style)'],['Cassa (kick)','Kick'],['Rullante (snare)','Snare'],
+['Hi-hat chiuso','Closed hi-hat'],['Hi-hat aperto','Open hi-hat'],['Tom melodici','Melodic toms'],['Cowbell / metallico (FM)','Cowbell / metallic (FM)'],['Sync aggressivo','Aggressive sync'],['Basso acid','Acid bass'],
+['Sequencer a frequenza audio (drone)','Audio-rate sequencer (drone)'],
+/* ---- MIDI dialog ---- */
+['Canale MIDI IN (interruttori sul retro)','MIDI IN channel (switches on the back)'],['Canale MIDI IN (DIP switch sul retro)','MIDI IN channel (DIP switches on the back)'],
+['Porta di uscita (THRU / USB OUT)','Output port (THRU / USB OUT)'],['Porta di uscita (OUT/THRU, USB)','Output port (OUT/THRU, USB)'],
+['MIDI THRU: ripete in uscita ciò che arriva su MIDI IN','MIDI THRU: echoes to the output whatever arrives at MIDI IN'],
+['MIDI OUT/THRU in modo THRU: ripete ciò che arriva su MIDI IN','MIDI OUT/THRU in THRU mode: echoes whatever arrives at MIDI IN'],
+['USB OUT: invia le note di pad, tastiera e sequencer sul canale scelto','USB OUT: send pad, keyboard and sequencer notes on the chosen channel'],
+['Invia le note del sequencer (pitch e velocity) sul canale scelto','Send sequencer notes (pitch and velocity) on the chosen channel'],
+['Invia il clock MIDI (start, stop e 24 impulsi per quarto) quando il sequencer usa il tempo interno','Send MIDI clock (start, stop and 24 pulses per quarter note) when the sequencer runs on its internal tempo'],
+['Invia il clock MIDI (start, stop e 24 impulsi per quarto) quando CLOCK è su INT','Send MIDI clock (start, stop and 24 pulses per quarter note) when CLOCK is set to INT'],
+['Web MIDI funziona in Chrome/Edge su computer e Android; Safari e iPhone non lo supportano.','Web MIDI works in Chrome/Edge on computers and Android; Safari and iPhone do not support it.'],
+['Web MIDI funziona in Chrome/Edge su computer e Android; non su iPhone.','Web MIDI works in Chrome/Edge on computers and Android; not on iPhone.'],
+['Canale ','Channel '],['nessuna','none'],['nessuno','none'],['Chiudi','Close'],
+/* ---- S-3340 help ---- */
+['PANNELLO','PANEL'],['Manopole','Knobs'],['Levette','Switches'],['Modifica step','Step edit'],['IMPOSTAZIONI','SETTINGS'],
+[': trascina su/giù. Doppio tocco = valore iniziale. Desktop: rotellina, Shift = fine.',': drag up/down. Double tap = default value. Desktop: mouse wheel, Shift = fine.'],
+[': tocca per commutare (o tocca la scritta del lato voluto).',': tap to flip (or tap the label of the side you want).'],
+[": tocca un'uscita (etichetta chiara) e poi un ingresso (etichetta rossa), oppure trascina. Tocca un ingresso collegato per staccare il cavo. Normalizzazioni: KB CV→OSC CV, GATE→ENV GATE, NOISE→EXT AUDIO, +5V→MIX 1, ENV→VCA.",": tap an output (light label) and then an input (red label), or drag. Tap a patched input to remove the cable. Normalizations: KB CV→OSC CV, GATE→ENV GATE, NOISE→EXT AUDIO, +5V→MIX 1, ENV→VCA."],
+["(pulsante in alto): canale di ingresso 1–16, MIDI THRU verso una porta d'uscita, invio delle note di pad e sequencer (USB OUT), clock MIDI in ingresso. Web MIDI funziona in Chrome/Edge su computer e Android, non su iPhone.","(button at the top): input channel 1–16, MIDI THRU to an output port, pad and sequencer notes out (USB OUT), MIDI clock in and out. Web MIDI works in Chrome/Edge on computers and Android, not on iPhone."],
+["è l'uscita audio del browser.","is the browser's audio output."],
+[": tocca il LED per sospendere/riattivare l'audio.",": tap the LED to pause/resume audio."],
+["SEQUENCER (come sull'hardware)","SEQUENCER (as on the hardware)"],
+[': toccalo per armarlo (vale per il comando successivo) o tienilo premuto. Su computer anche il tasto Shift. Le combinazioni a più tasti si possono fare tenendo premuto oppure premendo i tasti in rapida successione (entro 0,6 s).',': tap it to arm it (applies to the next command) or hold it. On a computer the Shift key works too. Multi-key combinations work by holding or by pressing the keys in quick succession (within 0.6 s).'],
+[': SHIFT+◀KYBD = modo tastiera (i 13 pad suonano), SHIFT+STEP▶ = modo step. ◀ ▶ da soli cambiano ottava (LED rossi).',': SHIFT+◀KYBD = keyboard mode (the 13 pads play notes), SHIFT+STEP▶ = step mode. ◀ ▶ alone change octave (red LEDs).'],
+['· SHIFT+PLAY = al contrario ·','· SHIFT+PLAY = reverse ·'],
+['SHIFT tenuto + PLAY per 2 s = SALVA','SHIFT held + PLAY for 2 s = SAVE'],
+[': scegli il pattern con i pad, PATTERN+pad per il banco, poi SHIFT+REC (PLAY annulla).',': choose the pattern with the pads, PATTERN+pad for the bank, then SHIFT+REC (PLAY cancels).'],
+[': in play tiene lo step (SHIFT = mute); a sequencer fermo tiene le note; in ARP attiva/disattiva ARP HOLD; in REC o in modifica step = pausa.',': while playing holds the step (SHIFT = mute); with the sequencer stopped holds the notes; in ARP toggles ARP HOLD; in REC or step edit = rest.'],
+[': torna allo step 1 · SHIFT = accento su tutti · in REC o in modifica step = accento dello step.',': back to step 1 · SHIFT = accent on all steps · in REC or step edit = accent on the step.'],
+['= inizializza il pattern ·','= clear the pattern ·'],
+['= annulla le modifiche (richiama quello salvato).','= undo changes (recall the saved one).'],
+['· SHIFT+TEMPO = swing (centro = nessuno, salvato col pattern).','· SHIFT+TEMPO = swing (centre = none, saved with the pattern).'],
+['= ratchet globale dal vivo.','= live global ratchet.'],
+["(sequencer fermo): ogni nota va nello step successivo; HOLD/REST = pausa. Sull'ultimo step scritto: TEMPO = gate 1–8 (8 = legato), GLIDE = glide, SHIFT+GLIDE = ratchet 1–4, RESET/ACCENT = accento. REC di nuovo per chiudere.","(sequencer stopped): each note goes to the next step; HOLD/REST = rest. On the last written step: TEMPO = gate 1–8 (8 = tie), GLIDE = glide, SHIFT+GLIDE = ratchet 1–4, RESET/ACCENT = accent. REC again to close."],
+[': SHIFT+pad (in play niente nota, il resto sì). LED: 5 glide, 6 ratchet, 7 accento, 8 pausa. SHIFT+stesso pad per uscire.',': SHIFT+pad (while playing everything but the note). LEDs: 5 glide, 6 ratchet, 7 accent, 8 rest. SHIFT+same pad to exit.'],
+[': arpeggiatore (doppio tocco = ARP HOLD) · SHIFT+ARP/SET END+pad (o in modo STEP: ARP/SET END+pad) = ultimo step.',': arpeggiator (double tap = ARP HOLD) · SHIFT+ARP/SET END+pad (or in STEP mode: ARP/SET END+pad) = last step.'],
+[': pagine 1–4 · SHIFT+PAGE = segui automaticamente.',': pages 1–4 · SHIFT+PAGE = follow automatically.'],
+[': PATTERN+pad (o ◀ ▶) = pattern · SHIFT+PATTERN+pad = banco. 8 banchi × 8 pattern; le modifiche non salvate si perdono cambiando pattern.',': PATTERN+pad (or ◀ ▶) = pattern · SHIFT+PATTERN+pad = bank. 8 banks × 8 patterns; unsaved changes are lost when you change pattern.'],
+[': SHIFT+HOLD/REST+8. ◀ ▶ = pagina (LED giallo): 1 TEMPO INPUT (1PPS, 2PPQ, 24PPQN, 48PPQN, CV), 2 ASSIGN OUT (1–16: accent, clock, clock/2, clock/4, rampa, saw, triangolo, random, trigger step 1, velocity, pressure, pitch bend, CC1, CC2, CC4, CC7), 3 CLOCK TYPE (interno, MIDI DIN, MIDI USB, trigger esterno, auto), 4 CLOCK EDGE (discesa, salita). Pad = valore 1–8 (LED verde), SHIFT+pad = 9–16 (LED rosso). SHIFT+HOLD/REST+8 per uscire e salvare.',': SHIFT+HOLD/REST+8. ◀ ▶ = page (yellow LED): 1 TEMPO INPUT (1PPS, 2PPQ, 24PPQN, 48PPQN, CV), 2 ASSIGN OUT (1–16: accent, clock, clock/2, clock/4, ramp, saw, triangle, random, step 1 trigger, velocity, pressure, pitch bend, CC1, CC2, CC4, CC7), 3 CLOCK TYPE (internal, MIDI DIN, MIDI USB, external trigger, auto), 4 CLOCK EDGE (falling, rising). Pad = value 1–8 (green LED), SHIFT+pad = 9–16 (red LED). SHIFT+HOLD/REST+8 to exit and save.'],
+/* ---- P-8 help ---- */
+[': trascina su/giù; doppio tocco = valore iniziale; desktop: rotellina, Shift = fine. Le manopole ENVELOPE sono bipolari: centro = nessuna modulazione.',': drag up/down; double tap = default value; desktop: mouse wheel, Shift = fine. The ENVELOPE knobs are bipolar: centre = no modulation.'],
+[': tocca per commutare, oppure tocca la scritta della posizione voluta. SEQ PITCH MOD e CLOCK hanno tre posizioni.',': tap to flip, or tap the label of the position you want. SEQ PITCH MOD and CLOCK have three positions.'],
+[': trascina o tocca una divisione. Vale solo col clock MIDI/USB (1/4 … 1/32T).',': drag or tap a division. Only applies with MIDI/USB clock (1/4 … 1/32T).'],
+[": tocca un'uscita (etichetta piena) e poi un ingresso (etichetta bordata), o trascina. Tocca un ingresso collegato per staccarlo.",": tap an output (solid label) and then an input (outlined label), or drag. Tap a patched input to remove the cable."],
+['parte e si ferma sullo step corrente.','starts and stops on the current step.'],
+['(a sequencer fermo) suona lo step corrente senza avanzare.','(sequencer stopped) plays the current step without advancing.'],
+['passa allo step successivo senza suonare.','moves to the next step without playing.'],
+[': ±5 V per step (circa 10 ottave), verso gli oscillatori secondo SEQ PITCH MOD (OSC 1&2 / OFF / OSC 2). Riga',': ±5 V per step (about 10 octaves), to the oscillators according to SEQ PITCH MOD (OSC 1&2 / OFF / OSC 2). Row'],
+[': 0–5 V, ampiezza dei tre inviluppi (e allunga leggermente i decay).',': 0–5 V, amplitude of the three envelopes (and slightly lengthens the decays).'],
+[': 10–10.000 BPM (sedicesimi). Sopra circa 2.000 BPM il sequencer diventa un oscillatore udibile.',': 10–10,000 BPM (sixteenth notes). Above about 2,000 BPM the sequencer becomes an audible oscillator.'],
+[': MIDI o USB = segue il clock MIDI (Web MIDI) con la divisione SCALE; INT/EXT = tempo interno, o ADV/CLOCK se collegato.',': MIDI or USB = follows MIDI clock (Web MIDI) with the SCALE division; INT/EXT = internal tempo, or ADV/CLOCK when patched.'],
+['TRIGGER in sostituisce i trigger del sequencer (fa partire i 3 inviluppi alla velocity dello step). VELOCITY in sostituisce la riga VEL. ADV/CLOCK esclude il TEMPO. PLAY/STOP: alto = play, basso = stop.','TRIGGER in replaces the sequencer triggers (fires the 3 envelopes at the step velocity). VELOCITY in replaces the VEL row. ADV/CLOCK overrides TEMPO. PLAY/STOP: high = play, low = stop.'],
+['EXT AUDIO sostituisce il rumore. VCF MOD sostituisce il rumore come modulazione del cutoff (quantità: NOISE/VCF MOD).','EXT AUDIO replaces the noise. VCF MOD replaces the noise as cutoff modulation (amount: NOISE/VCF MOD).'],
+['Si sommano: OSC 1/2 CV (1 V/ott), OSC/VCF/VCA DECAY (±5 V), NOISE LEVEL e 1-2 FM AMT (0–8 V), TEMPO (1 V/ott), VCA CV.','Added to the knob: OSC 1/2 CV (1 V/oct), OSC/VCF/VCA DECAY (±5 V), NOISE LEVEL and 1-2 FM AMT (0–8 V), TEMPO (1 V/oct), VCA CV.'],
+['Note in ingresso: intonazione relativa a C4 su entrambi gli oscillatori e, a sequencer fermo, attivano gli inviluppi con la velocity. Il sequencer invia le sue note in uscita (USB OUT). Web MIDI: Chrome/Edge, non iPhone.','Incoming notes: pitch relative to C4 on both oscillators and, with the sequencer stopped, they fire the envelopes with their velocity. The sequencer sends its notes out (USB OUT). Web MIDI: Chrome/Edge, not iPhone.'],
+/* ---- knob / switch values ---- */
+[' semitoni',' semitones'],[' (quadra)',' (square)'],[' (stretta)',' (narrow)'],[' (larga)',' (wide)'],
+['LO (passa-basso)','LO (low-pass)'],['HI (passa-alto)','HI (high-pass)'],['HP (passa-alto)','HP (high-pass)'],['LP (passa-basso)','LP (low-pass)'],
+[' ott (',' oct ('],[' (attivo solo con clock MIDI/USB)',' (only active with MIDI/USB clock)'],
+/* ---- display messages ---- */
+['  (◀▶ pagina · pad = valore · SHIFT+pad = 9–16)','  (◀▶ page · pad = value · SHIFT+pad = 9–16)'],
+['IMPOSTAZIONI · pag. ','SETTINGS · page '],['Impostazioni salvate','Settings saved'],
+[' step (non ancora salvato: SHIFT+PLAY 2 s per salvare)',' steps (not saved yet: SHIFT+PLAY 2 s to save)'],
+[' step): premi PLAY/STOP',' steps): press PLAY/STOP'],[' · con il suo pattern (',' · with its own pattern ('],[' · pattern attuale mantenuto',' · current pattern kept'],
+[' · premi PLAY/STOP',' · press PLAY/STOP'],[' · SHIFT+pad per modificarlo',' · SHIFT+pad to edit it'],
+[' · TEMPO = gate, GLIDE = glide, RESET/ACCENT = accento',' · TEMPO = gate, GLIDE = glide, RESET/ACCENT = accent'],
+[' · suona una nota per cambiarla',' · play a note to change it'],[' è una pausa',' is a rest'],
+[' (traspone il sequencer)',' (transposes the sequencer)'],[' (suono e pattern)',' (sound and pattern)'],[' (solo suono)',' (sound only)'],
+[': ora tocca ',': now tap '],[': scegli con i pad 1–8 o ◀ ▶',': choose with pads 1–8 or ◀ ▶'],
+["ARP HOLD: l'arpeggio continua dopo aver lasciato i tasti","ARP HOLD: the arpeggio keeps going after you release the keys"],
+['ARP + HOLD (doppio tocco): suona un accordo','ARP + HOLD (double tap): play a chord'],
+['ARP attivo: tieni premute più note (doppio tocco = ARP HOLD)','ARP on: hold several notes (double tap = ARP HOLD)'],['ARP disattivato','ARP off'],
+['Accento globale disattivato','Global accent off'],['Accento su tutti gli step','Accent on all steps'],
+['Audio attivo','Audio on'],['Audio in pausa','Audio paused'],
+['Cavo staccato: ','Cable removed: '],['Cavo: ','Cable: '],["Collega un'uscita a un ingresso",'Connect an output to an input'],["un'uscita",'an output'],['un ingresso','an input'],
+['Esportazione annullata','Export cancelled'],['Esportazione non disponibile qui','Export not available here'],['File non valido','Invalid file'],
+['Fine modifica step','Step edit finished'],['HOLD tasti rilasciato','Key HOLD released'],['HOLD rilasciato','HOLD released'],['HOLD: le note restano tenute','HOLD: notes stay held'],['HOLD: step corrente tenuto','HOLD: current step held'],
+['Importati ','Imported '],
+['Impossibile ripristinare: memoria del browser piena o bloccata','Cannot restore: browser storage is full or blocked'],
+['Impossibile salvare: memoria del browser piena o bloccata','Cannot save: browser storage is full or blocked'],
+['In ARP il sequencer parte tenendo premute le note','In ARP the sequencer starts when you hold notes'],
+['In play si modificano gate, pausa, accento, ratchet e glide: la nota solo a sequencer fermo','While playing you can edit gate, rest, accent, ratchet and glide: the note only with the sequencer stopped'],
+['Ingresso ','Input '],['Uscita ','Output '],['Lo step ','Step '],['MIDI IN sul canale ','MIDI IN on channel '],
+['MIDI IN: collega una tastiera MIDI (Chrome/Edge). Stato: ','MIDI IN: connect a MIDI keyboard (Chrome/Edge). Status: '],
+['MIDI OUT/THRU: non disponibile nel browser','MIDI OUT/THRU: not available in the browser'],
+['Modifiche annullate: richiamato il pattern salvato (PATTERN+RESET)','Changes undone: saved pattern recalled (PATTERN+RESET)'],
+['Modo KEYBOARD: i pad suonano le note','KEYBOARD mode: the pads play notes'],['Modo STEP: SHIFT+pad per modificare uno step','STEP mode: SHIFT+pad to edit a step'],
+['Mute disattivato','Mute off'],['Nome vuoto: preset non salvato','Empty name: preset not saved'],['Nota ','Note '],['Ottava: ','Octave: '],
+['PHONES: uscita audio verso cuffie/altoparlanti del dispositivo','PHONES: audio output to the device headphones/speakers'],
+['PHONES: uscita audio verso gli altoparlanti / cuffie del dispositivo','PHONES: audio output to the device speakers / headphones'],
+['Pagina automatica','Automatic page'],['Pagina ','Page '],['Panic: tutte le note spente','Panic: all notes off'],
+['Pattern in MUTE','Pattern MUTED'],['Pattern inizializzato (SHIFT+RESET+PATTERN)','Pattern cleared (SHIFT+RESET+PATTERN)'],['Pattern salvato in banco ','Pattern saved in bank '],
+['Per salvare premi SHIFT+REC (PLAY/STOP annulla)','To save press SHIFT+REC (PLAY/STOP cancels)'],
+['Preset eliminato: ','Preset deleted: '],['Preset salvato: ','Preset saved: '],
+['Questo file non contiene dati di questo simulatore','This file has no data for this simulator'],
+['REC chiuso · ','REC closed · '],['REC: pausa allo step ','REC: rest on step '],
+['REC: suona le note (pad o tastiera) · HOLD/REST = pausa · TEMPO = gate · RESET/ACCENT = accento','REC: play the notes (pads or keyboard) · HOLD/REST = rest · TEMPO = gate · RESET/ACCENT = accent'],
+['Riproduzione al contrario','Reverse playback'],['Riproduzione in avanti','Forward playback'],
+['SALVA in banco ','SAVE to bank '],['SALVA in pattern ','SAVE to pattern '],['SALVA in ','SAVE to '],
+['SALVA: scegli il pattern (pad 1–8), PATTERN+pad per il banco, poi SHIFT+REC','SAVE: choose the pattern (pads 1–8), PATTERN+pad for the bank, then SHIFT+REC'],
+["SET END: tocca il pad dell'ultimo step (pagina ","SET END: tap the pad of the last step (page "],
+['SHIFT+HOLD/REST: in play = mute · con il pad 8 = impostazioni','SHIFT+HOLD/REST: while playing = mute · with pad 8 = settings'],
+['Salvataggio annullato','Save cancelled'],['Schermo intero non consentito qui','Full screen not allowed here'],['Selezione annullata','Selection cancelled'],
+['Sessione ripristinata: ricarico…','Session restored: reloading…'],['Sessione esportata in ','Session exported to '],
+['TRIGGER funziona a sequencer fermo','TRIGGER works with the sequencer stopped'],['Trasposizione ','Transpose '],['Tutti i cavi staccati','All cables removed'],['Ultimo step: ','Last step: '],
+['Banco ','Bank '],[', 64 pattern',', 64 patterns'],[' · accento',' · accent'],[' (legato al successivo)',' (tied to the next)'],[' (legato)',' (tied)'],['RATCHET globale (live) ×','Global RATCHET (live) ×'],
+['pausa','rest'],
+["Nuova versione scaricata: chiudi e riapri l'app",'New version downloaded: close and reopen the app'],["Pronta per l'uso offline",'Ready for offline use'],
+['MIDI n/d','MIDI n/a'],[' VOCI',' VOICES'],
+/* ---- dialogs ---- */
+['Nome del preset:','Preset name:'],['Esiste già un preset «','A preset named «'],['». Lo sovrascrivo?','» already exists. Overwrite it?'],['Elimino il preset «','Delete the preset «'],
+['Salvare nel preset anche il pattern su cui stai lavorando?\n\nOK = suono e pattern\nAnnulla = solo il suono','Also save the pattern you are working on in the preset?\n\nOK = sound and pattern\nCancel = sound only'],
+['Il pattern su cui stai lavorando ha modifiche non salvate.\n\nOK = carica suono e pattern del preset (le modifiche si perdono)\nAnnulla = carica solo il suono e tieni il tuo pattern','The pattern you are working on has unsaved changes.\n\nOK = load the preset sound and pattern (your changes are lost)\nCancel = load the sound only and keep your pattern'],
+['Il file contiene anche la sessione salvata','The file also contains the saved session'],[' il ',' on '],[' (suono',' (sound'],[', pattern e impostazioni',', patterns and settings'],[' e sequenza',' and sequence'],
+['.\nRipristinarla? Sostituisce quella attuale.','.\nRestore it? It replaces the current one.'],
+];
+const I18N_TITLE={'S-3340 · Simulatore semi-modulare':'S-3340 · Semi-modular simulator','P-8 · Simulatore percussivo semi-modulare':'P-8 · Semi-modular percussion simulator'};
+const I18N_SORTED=I18N.filter(p=>p[0]!==p[1]).sort((a,b)=>b[0].length-a[0].length);
+const I18N_EXACT=new Map(I18N);
+let LANG=(()=>{try{return localStorage.getItem('synth-lang')||'en';}catch(e){return 'en';}})();
+function tr(s){
+  if(LANG!=='en'||!s||!/[a-zàèéìòù]/i.test(s))return s;
+  const t=s.trim();if(I18N_EXACT.has(t)){const e=I18N_EXACT.get(t);return s.replace(t,e);}
+  let out=s;for(const [a,b] of I18N_SORTED){if(a.length>2&&out.includes(a))out=out.split(a).join(b);}
+  return out;
+}
+const I18N_ATTR=['label','title','placeholder','aria-label'];
+function i18nNode(n){
+  if(n.nodeType===3){const p=n.parentNode;if(!p||/^(SCRIPT|STYLE|TEXTAREA)$/.test(p.nodeName))return;
+    const v=n.nodeValue;
+    if(LANG==='en'){if(n.__en!==undefined&&v===n.__en)return;const e=tr(v);if(e!==v){n.__it=v;n.__en=e;n.nodeValue=e;}else{n.__it=undefined;n.__en=undefined;}}
+    else if(n.__it!==undefined&&v===n.__en){n.nodeValue=n.__it;n.__it=n.__en=undefined;}
+  }else if(n.nodeType===1){
+    if(/^(SCRIPT|STYLE|TEXTAREA)$/.test(n.nodeName))return;
+    for(const a of I18N_ATTR){if(!n.hasAttribute||!n.hasAttribute(a))continue;n.__ia=n.__ia||{};const v=n.getAttribute(a);
+      if(LANG==='en'){if(n.__ia[a]&&v===n.__ia[a].en)continue;const e=tr(v);if(e!==v){n.__ia[a]={it:v,en:e};n.setAttribute(a,e);}}
+      else if(n.__ia[a]&&v===n.__ia[a].en){n.setAttribute(a,n.__ia[a].it);delete n.__ia[a];}}
+    for(const c of n.childNodes)i18nNode(c);
+  }
+}
+let i18nBusy=false;
+function applyLang(){
+  document.documentElement.lang=LANG;
+  i18nBusy=true;i18nNode(document.body);i18nBusy=false;
+  const t0=document.title.__it||document.title;
+  if(!document.__titleIt)document.__titleIt=document.title;
+  document.title=LANG==='en'?(I18N_TITLE[document.__titleIt]||document.__titleIt):document.__titleIt;
+  const b=document.getElementById('langBtn');if(b){b.textContent=LANG==='en'?'IT':'EN';b.title=LANG==='en'?'Passa all’italiano':'Switch to English';}
+}
+new MutationObserver(ms=>{if(i18nBusy)return;i18nBusy=true;try{for(const m of ms){
+  if(m.type==='characterData')i18nNode(m.target);
+  else if(m.type==='childList')for(const n of m.addedNodes)i18nNode(n);
+  else if(m.type==='attributes')i18nNode(m.target);}}finally{i18nBusy=false;}}).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:I18N_ATTR});
+{const c0=window.confirm.bind(window),p0=window.prompt.bind(window),a0=window.alert.bind(window);
+  window.confirm=m=>c0(tr(String(m)));window.prompt=(m,d)=>p0(tr(String(m)),d);window.alert=m=>a0(tr(String(m)));}
+function setLang(l){LANG=l;try{localStorage.setItem('synth-lang',l);}catch(e){}
+  if(l==='it'){i18nBusy=true;i18nNode(document.body);i18nBusy=false;}
+  applyLang();}
+{const b=document.getElementById('langBtn');if(b)b.onclick=()=>setLang(LANG==='en'?'it':'en');}
+applyLang();
+
 </script>
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').then(r=>{

@@ -1,64 +1,101 @@
-# S-3340 · Simulatore semi-modulare
+# S-3340 · Semi-modular synthesizer simulator
 
-Simulatore da browser di un sintetizzatore semi-modulare analogico con schema ispirato al Behringer Crave: oscillatore 3340, filtro ladder, sequencer a 32 step e Poly Chain fino a 16 voci. Funziona su computer, tablet e telefono, anche **offline** come app installata.
+*English · [Italiano](README.it.md)*
 
-> Progetto non ufficiale e senza alcun legame con Behringer / Music Tribe. "Behringer" e "Crave" sono marchi dei rispettivi proprietari e sono citati solo per descrivere lo strumento a cui si ispira il layout. Grafica, codice e suoni sono originali.
+A browser simulator of an analog semi-modular synthesizer laid out like the Behringer Crave: 3340 oscillator, ladder filter, 32-step sequencer and Poly Chain up to 16 voices. It runs on computers, tablets and phones, and also **offline** as an installed app.
 
-## Cosa contiene
+> Unofficial project, not affiliated with Behringer / Music Tribe. "Behringer" and "Crave" are trademarks of their respective owners and are mentioned only to describe the instrument the layout is based on. Graphics, code and sounds are original.
 
-- **VCO 3340**: dente di sega e impulso con larghezza regolabile (PULSE WIDTH), FM, modulazione di larghezza, deriva analogica leggera.
-- **Mixer** oscillatore / rumore, con ingresso audio esterno.
-- **Filtro ladder 4 poli (24 dB/ottava)**: passa-basso e passa-alto, risonanza fino all'auto-oscillazione.
-- **Inviluppo** Attack / Decay / Sustain con levetta SUSTAIN ON/OFF e **VCA** con modalità ENV o sempre aperto (drone).
-- **LFO** triangolo / quadra con destinazioni selezionabili.
-- **Patch bay** completa con collegamenti interni (normalizzazioni): un cavo nel jack di ingresso sostituisce il collegamento interno.
-- **Sequencer a 32 step**: gate 1–8, pausa, accento, glide, ratchet, swing, registrazione dal vivo, 8 banchi × 8 pattern.
-- **Arpeggiatore**, HOLD, trasposizione dal vivo.
-- **Poly Chain**: da 1 a 16 voci.
-- **Impostazioni** del sequencer: tempo input (1PPS, 2PPQ, 24/48 PPQN, CV), assign out, tipo e fronte del clock.
-- **MIDI** in/out tramite Web MIDI (canale, THRU, invio note e clock MIDI con start/stop).
-- **Tastiera a schermo** e tastiera del computer (A W S E D F …, Z/X per l'ottava, spazio = PLAY).
-- **Preset** di fabbrica e **preset personali**, con esportazione e importazione della **sessione completa**.
+> The interface is in English, with an **IT** button in the header to switch to Italian (the choice is remembered). Panel labels use the same names as the hardware.
 
-## Avvio rapido
+## Features
 
-1. Apri la pagina e tocca **▶ Accendi** (i browser attivano l'audio solo dopo un tocco).
-2. Dal menu **PRESET** scegli un suono, poi suona con la tastiera in basso o premi **PLAY/STOP** per il sequencer.
-3. Per collegare un cavo tocca un'**uscita** e poi un **ingresso**. Toccando un ingresso già collegato il cavo si stacca.
-4. Il pulsante **?** apre la guida con tutte le combinazioni di tasti.
+- **3340 VCO**: reverse sawtooth and pulse with adjustable width (PULSE WIDTH), FM, width modulation, slight analog drift.
+- **Mixer** oscillator / noise, with external audio input.
+- **4-pole ladder filter (24 dB/octave)**: low-pass and high-pass, resonance up to self-oscillation.
+- **Envelope** Attack / Decay / Sustain with SUSTAIN ON/OFF switch, and **VCA** in ENV or always-open mode (drone).
+- **LFO** triangle / square with selectable destinations.
+- **Full patch bay** with internal connections (normalizations): a cable in an input jack replaces the internal connection.
+- **32-step sequencer**: gate 1–8, rest, accent, glide, ratchet, swing, live recording, 8 banks × 8 patterns.
+- **Arpeggiator**, HOLD, live transposition.
+- **Poly Chain**: 1 to 16 voices.
+- **Sequencer settings**: tempo input (1PPS, 2PPQ, 24/48 PPQN, CV), assign out, clock type and clock edge.
+- **MIDI** in/out via Web MIDI (channel, THRU, note output, MIDI clock output with start/stop).
+- **On-screen keyboard** and computer keyboard (A W S E D F …, Z/X for octave, space = PLAY).
+- **Factory presets**, each with its own example pattern, and **user presets**, with export and import of the **whole session**.
 
-## Preset e sessioni
+## Ranges (from the official specifications)
 
-Dal menu **PRESET**:
-
-| Voce | Cosa fa |
+| Parameter | Range |
 |---|---|
-| ＋ Salva il suono attuale… | Salva manopole, levette, cavi e voci con un nome (anche col pulsante SALVA); a scelta anche il pattern su cui stai lavorando |
-| ★ nome | Richiama un tuo preset |
-| ✕ Elimina «nome» | Elimina il preset caricato |
-| ⇩ Esporta sessione | Crea `S3340-sessione.json` con preset, suono attuale, tempo, i 64 pattern e le impostazioni |
-| ⇧ Importa sessione o preset | Aggiunge i preset del file e, se confermi, ripristina la sessione |
+| Oscillator | 8.18 Hz – 8.37 kHz, FREQUENCY ±1 octave |
+| Pulse width | 5–95 % |
+| LFO | 0.1–350 Hz |
+| Cutoff | 20 Hz – 20 kHz |
+| Attack / Decay | 2 ms – 3 s / 2 ms – 5 s |
+| Sustain, ENV out | 0–8 V |
+| Glide | 0–2 s |
+| Inputs / outputs | ±5 V; gate 0/+5 V |
+| Trigger inputs (PLAY/STOP, RESET, HOLD, ENV GATE, TEMPO as clock) | active above 3.2 V |
 
-Ogni preset di fabbrica porta con sé un pattern d'esempio: caricandolo, il pattern va nel pattern di lavoro (premi PLAY/STOP per sentirlo) e i banchi salvati non vengono toccati. Se il pattern di lavoro ha modifiche non salvate, il simulatore chiede prima se sostituirlo o caricare solo il suono.
+Values not given in the specifications (sequencer tempo 40–240 BPM, swing, knob curves) are the author's choices.
 
-I **pattern** del sequencer hanno una memoria propria (8 banchi × 8 pattern): si salvano tenendo **SHIFT + PLAY per 2 secondi**, scegliendo il pattern coi pad (PATTERN + pad per il banco) e confermando con **SHIFT + REC**.
+## Quick start
 
-Tutto viene salvato nel browser. La versione online e quella installata offline hanno memorie separate: per passare da una all'altra usa Esporta e Importa.
+1. Open the page and tap **▶ Switch on** (browsers only enable audio after a tap).
+2. Pick a sound from the **PRESET** menu, then play the keyboard at the bottom or press **PLAY/STOP** to hear the preset's pattern.
+3. To patch a cable, tap an **output** and then an **input**. Tapping an input that is already patched removes the cable.
+4. The **?** button opens the guide with every key combination.
 
-## Usarlo offline (iPhone, iPad, Android)
+## Presets and sessions
 
-Il simulatore è una PWA: dopo la prima apertura funziona anche senza connessione.
+From the **PRESET** menu:
 
-- **iPhone / iPad (Safari)**: apri la pagina, tocca Condividi → **Aggiungi alla schermata Home**.
-- **Android (Chrome)**: menu ⋮ → **Installa app**.
+| Menu item | What it does |
+|---|---|
+| ＋ Save current sound… | Saves knobs, switches, cables and voices under a name (also with the SAVE button); optionally the working pattern too |
+| ★ name | Recalls one of your presets |
+| ✕ Delete «name» | Deletes the loaded preset |
+| ⇩ Export session | Creates `S3340-sessione.json` with your presets, the current sound, tempo, all 64 patterns and the settings |
+| ⇧ Import session or presets | Adds the presets in the file and, if you confirm, restores the session |
 
-Dopo un aggiornamento dei file su GitHub, apri l'app una volta con la connessione attiva per scaricare la nuova versione.
+Every factory preset carries an example pattern. Loading the preset puts the pattern into the working pattern (press PLAY/STOP to hear it); saved banks are never touched. If the working pattern has unsaved changes, the simulator first asks whether to replace it or load the sound only.
 
-## Compatibilità
+Sequencer **patterns** have their own memory (8 banks × 8 patterns), as on the hardware: hold **SHIFT + PLAY for 2 seconds**, choose the pattern with the pads (PATTERN + pad for the bank) and confirm with **SHIFT + REC**.
 
-- Audio: Chrome, Edge, Firefox, Safari recenti (AudioWorklet, con ripiego automatico se non disponibile).
-- MIDI: Chrome ed Edge su computer e Android. Safari e i browser su iPhone/iPad non supportano Web MIDI.
+Everything is stored in the browser. The online version and the installed offline version have separate memories: use Export and Import to move between them.
 
-## Note tecniche
+## Offline use (iPhone, iPad, Android)
 
-Il motore audio gira in un AudioWorklet a frequenza di campionamento piena: oscillatori con anti-aliasing polyBLEP, filtro ladder a ritardo zero (ZDF) con saturazione, inviluppi esponenziali, patch bay elaborata campione per campione.
+The simulator is a PWA: after the first visit it also works without a connection.
+
+- **iPhone / iPad (Safari)**: open the page, tap Share → **Add to Home Screen**.
+- **Android (Chrome)**: menu ⋮ → **Install app**.
+
+After updating the files on GitHub, open the app once while online to download the new version.
+
+## Publishing on GitHub Pages
+
+1. Upload the contents of this folder to the repository (it must be **public**, unless your plan allows Pages on private repositories).
+2. Settings → **Pages** → Source: *Deploy from a branch*, branch `main`, folder `/ (root)`.
+3. After a couple of minutes the page is available at the address shown by GitHub.
+
+## Files
+
+| File | Contents |
+|---|---|
+| `index.html` | The complete simulator (interface, audio engine, embedded fonts) |
+| `sw.js` | Service worker for offline use |
+| `manifest.webmanifest` | Installable app data |
+| `icon-*.png` | App icons |
+| `OFL-*.txt` | Licenses of the Barlow and JetBrains Mono fonts (SIL Open Font License) |
+| `README.md`, `README.it.md` | This guide in English and Italian |
+
+## Compatibility
+
+- Audio: recent Chrome, Edge, Firefox and Safari (AudioWorklet, with an automatic fallback when unavailable).
+- MIDI: Chrome and Edge on computers and Android. Safari and every browser on iPhone/iPad do not support Web MIDI.
+
+## Technical notes
+
+The audio engine runs in an AudioWorklet at the full sample rate: polyBLEP anti-aliased oscillators, zero-delay-feedback (ZDF) ladder filter with saturation, exponential envelopes, patch bay processed sample by sample.
