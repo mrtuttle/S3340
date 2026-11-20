@@ -94,7 +94,8 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
 .pad.wht.down,.pad.wht.lit{background:linear-gradient(#ff7a55,#ff4a25);box-shadow:0 0 16px #ff5b3a}
 .pad.wht.dim{background:linear-gradient(#3a1a14,#24100b)}
 .pad.wht.tie{background:linear-gradient(#7f2a18,#53190c)}
-.pad.wht.cur{box-shadow:inset 0 0 0 4px #fff,0 0 18px #fff}
+.pad.wht.cur,.pad.wht.dim.cur,.pad.wht.tie.cur{background:linear-gradient(#ffd9a8,#ff8a4a);box-shadow:inset 0 0 0 3px #fff,0 0 20px #ffb070}
+.pad.wht.dim.cur{background:linear-gradient(#c98a6a,#8f4a2c);box-shadow:inset 0 0 0 3px #fff,0 0 14px #ffb070}
 .pad.wht.sel{outline:4px solid var(--acc2);outline-offset:2px}
 .pad.wht.blink{animation:bl .5s steps(2) infinite}
 @keyframes bl{50%{filter:brightness(1.8)}}
@@ -150,7 +151,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
   <ul>
     <li><b>Manopole</b>: trascina su/giù. Doppio tocco = valore iniziale. Desktop: rotellina, Shift = fine.</li>
     <li><b>Levette</b>: tocca per commutare (o tocca la scritta del lato voluto).</li>
-    <li><b>Patchbay</b>: tocca un'uscita (etichetta chiara) e poi un ingresso (etichetta rossa), oppure trascina. Tocca un ingresso collegato per staccare il cavo. Normalizzazioni: KB CV→OSC CV, GATE→ENV GATE, NOISE→EXT AUDIO, +5V→MIX 1, ENV→VCA.</li>
+    <li><b>Patchbay</b>: tocca un'uscita (etichetta chiara) e poi un ingresso (etichetta rossa), oppure trascina. Tocca un ingresso collegato per staccare il cavo. Normalizzazioni: KB CV→OSC CV, GATE→ENV GATE, NOISE→EXT AUDIO, +5V→MIX 2, ENV→VCA.</li>
     <li><b>MIDI</b> (pulsante in alto): canale di ingresso 1–16, MIDI THRU verso una porta d'uscita, invio delle note di pad e sequencer (USB OUT), clock MIDI in ingresso. Web MIDI funziona in Chrome/Edge su computer e Android, non su iPhone. <b>PHONES</b> è l'uscita audio del browser. <b>POWER</b>: tocca il LED per sospendere/riattivare l'audio.</li>
   </ul>
   <h3>SEQUENCER (come sull'hardware)</h3>
@@ -164,6 +165,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
     <li><b>TEMPO</b> · SHIFT+TEMPO = swing (centro = nessuno, salvato col pattern). <b>SHIFT+GLIDE</b> = ratchet globale dal vivo.</li>
     <li><b>REC</b> (sequencer fermo): ogni nota va nello step successivo; HOLD/REST = pausa. Sull'ultimo step scritto: TEMPO = gate 1–8 (8 = legato), GLIDE = glide, SHIFT+GLIDE = ratchet 1–4, RESET/ACCENT = accento. REC di nuovo per chiudere.</li>
     <li><b>Modifica step</b>: SHIFT+pad (in play niente nota, il resto sì). LED: 5 glide, 6 ratchet, 7 accento, 8 pausa. SHIFT+stesso pad per uscire.</li>
+    <li>Modalità di arpeggio: mentre l'arpeggio suona, ◀ ▶ scelgono una delle 8 modalità (i LED 1–8 mostrano il numero): 1 UP, 2 DOWN, 3 DOWN e UP, 4 RANDOM, 5 UP +1 ottava, 6 DOWN +1 ottava, 7 UP −1 ottava, 8 DOWN −1 ottava. SHIFT+TEMPO = durata delle note dell'arpeggio. LED ARP fisso = ARP, lampeggiante = ARP HOLD.</li>
     <li><b>ARP/SET END</b>: arpeggiatore (doppio tocco = ARP HOLD) · SHIFT+ARP/SET END+pad (o in modo STEP: ARP/SET END+pad) = ultimo step. <b>PAGE</b>: pagine 1–4 · SHIFT+PAGE = segui automaticamente.</li>
     <li><b>PATTERN/BANK</b>: PATTERN+pad (o ◀ ▶) = pattern · SHIFT+PATTERN+pad = banco. 8 banchi × 8 pattern; le modifiche non salvate si perdono cambiando pattern.</li>
     <li><b>IMPOSTAZIONI</b>: SHIFT+HOLD/REST+8. ◀ ▶ = pagina (LED giallo): 1 TEMPO INPUT (1PPS, 2PPQ, 24PPQN, 48PPQN, CV), 2 ASSIGN OUT (1–16: accent, clock, clock/2, clock/4, rampa, saw, triangolo, random, trigger step 1, velocity, pressure, pitch bend, CC1, CC2, CC4, CC7), 3 CLOCK TYPE (interno, MIDI DIN, MIDI USB, trigger esterno, auto), 4 CLOCK EDGE (discesa, salita). Pad = valore 1–8 (LED verde), SHIFT+pad = 9–16 (LED rosso). SHIFT+HOLD/REST+8 per uscire e salvare.</li>
@@ -232,7 +234,7 @@ function makeEngine(){
       this.v=[];for(let i=0;i<16;i++){const v=new Voice(2463534242+i*7919);v.det=i?((i*0.6180339)%1-.5)*.006:0;this.v.push(v);}
       this.nv=1;this.inMap=new Int16Array(IN.length).fill(-1);this.nCables=0;
       this.lph=0;this.held=[];this.phys=new Set();this.susSet=new Set();this.uiSus=false;this.susEff=false;
-      this.arpHeld=[];this.arp=false;this.arpIdx=0;this.arpLatch=false;
+      this.arpHeld=[];this.arp=false;this.arpIdx=0;this.arpLatch=false;this.seqReq=false;this.modeArp=false;this.arpMode=0;this.arpGate=.5;
       this.playing=false;this.step=-1;this.stepCount=0;this.sc=0;this.curDur=sr/8;this.gc=0;this.seqNote=-1;this.tieNext=false;this.transpose=0;
       this.dir=1;this.mute=false;this.accAll=false;this.ratchet=1;this.uiHold=false;this.jackHold=false;this.holdStep=false;
       this.rN=1;this.subIdx=0;this.subLen=sr/8;this.gFrac=.5;this.lastN=-1;this.lastA=false;this.lastGl=0;this.rndCV=0;
@@ -254,11 +256,13 @@ function makeEngine(){
         case 'xv':for(let j=0;j<4;j++)this.xv[j]=+m.v[j]||0;break;
         case 'taps':this.tp=(m.list||[]).map(k=>O[k]).filter(i=>i!=null);this.tacc=new Float32Array(this.tp.length*2);for(let j=0;j<this.tp.length;j++){this.tacc[j*2]=-1e9;this.tacc[j*2+1]=1e9;}this.tw=0;break;
         case 'pat':this.pat={len:Math.max(1,Math.min(32,m.len|0)),steps:m.steps};break;
-        case 'play':{const on=m.v==null?!this.playing:!!m.v;if(on&&!this.playing)this.seqStart();else if(!on&&this.playing)this.seqStop();break;}
-        case 'oct':if(this.playing&&!this.arp)this.transpose=Math.max(-48,Math.min(48,this.transpose+(m.d|0)));break;
+        case 'play':{if(m.btn){if(this.playing){if(this.arp)this.arpHeld=[];this.setSeq(false);}else this.setSeq(true);break;}const on=m.v==null?!this.seqReq:!!m.v;this.setSeq(on);break;}
+        case 'oct':if(this.playing&&!this.modeArp)this.transpose=Math.max(-96,Math.min(96,this.transpose+(m.d|0)));break;
         case 'reset':this.step=-1;this.transpose=0;if(this.playing){this.advance();}break;
-        case 'arp':this.arp=!!m.v;this.arpHeld=[];this.arpLatch=!!m.latch;if(this.playing)this.seqStop();break;
-        case 'arpLatch':this.arpLatch=!!m.v;if(!this.arpLatch){this.arpHeld=this.arpHeld.filter(n=>this.phys.has(n));if(!this.arpHeld.length&&this.playing&&this.arp)this.seqStop();}break;
+        case 'arp':this.arp=!!m.v;this.arpHeld=[];this.arpLatch=!!m.latch;this.refresh();break;
+        case 'arpMode':this.arpMode=((m.v|0)%8+8)%8;this.arpIdx=0;break;
+        case 'arpGate':this.arpGate=Math.max(.05,Math.min(.98,+m.v||.5));break;
+        case 'arpLatch':this.arpLatch=!!m.v;if(!this.arpLatch){this.arpHeld=this.arpHeld.filter(n=>this.phys.has(n));}this.refresh();break;
         case 'nv':this.allOff();this.nv=Math.max(1,Math.min(16,m.v|0));break;
         case 'hold':this.uiHold=!!m.v;break;
         case 'sustain':this.uiSus=!!m.v;break;
@@ -267,9 +271,9 @@ function makeEngine(){
         case 'rev':this.dir=m.v?-1:1;break;
         case 'ratchet':this.ratchet=Math.max(1,Math.min(4,m.v|0));break;
         case 'mclk':this.lastMclk=this.now;if(this.src==='midi')this.pulse(6);break;
-        case 'mstart':this.extCmd=true;if(this.playing)this.seqStop();this.seqStart();this.extCmd=false;break;
-        case 'mstop':this.extCmd=true;if(this.playing)this.seqStop();this.extCmd=false;break;
-        case 'mcont':if(!this.playing){this.playing=true;this.post({t:'pl',v:true});}break;
+        case 'mstart':this.extCmd=true;if(this.playing)this.seqStop();this.seqReq=true;this.seqStart();this.extCmd=false;break;
+        case 'mstop':this.extCmd=true;this.setSeq(false);this.extCmd=false;break;
+        case 'mcont':this.seqReq=true;if(!this.playing){this.playing=true;this.modeArp=false;this.postPl();}break;
         case 'panic':if(this.playing)this.seqStop();this.allOff();this.susSet.clear();for(const v of this.v){v.env=0;v.stage=0;v.s0=v.s1=v.s2=v.s3=0;}break;
       }
     }
@@ -294,7 +298,7 @@ function makeEngine(){
     kbOn(n,vel){
       if(this.arp){
         if(this.arpLatch&&this.phys.size===0)this.arpHeld=[];
-        this.phys.add(n);if(!this.arpHeld.includes(n))this.arpHeld.push(n);if(!this.playing)this.seqStart();return;}
+        this.phys.add(n);if(!this.arpHeld.includes(n))this.arpHeld.push(n);this.refresh();return;}
       this.phys.add(n);this.susSet.delete(n);
       if(this.playing){this.transpose=n-60;return;}
       if(this.nv===1){
@@ -305,7 +309,7 @@ function makeEngine(){
     }
     kbOff(n){
       this.phys.delete(n);
-      if(this.arp){if(!this.arpLatch){this.arpHeld=this.arpHeld.filter(x=>x!==n);if(!this.arpHeld.length&&this.playing)this.seqStop();}return;}
+      if(this.arp){if(!this.arpLatch){this.arpHeld=this.arpHeld.filter(x=>x!==n);this.refresh();}return;}
       if(this.susEff){this.susSet.add(n);return;}
       this.kbRelease(n);
     }
@@ -315,29 +319,41 @@ function makeEngine(){
         if(this.held.length){const m=this.held[this.held.length-1];v.note=m;v.target=(m-60)/12;}else v.gate=false;
       }else this.rel(n,'k');
     }
-    seqStart(){if(!this.extCmd)this.post({t:'mout',s:'start'});this.playing=true;this.step=-1;this.stepCount=-1;this.arpIdx=0;this.tieNext=false;this.pc=0;this.halfAt=0;this.sinceP=0;this.advance();this.post({t:'pl',v:true});}
-    seqStop(){if(!this.extCmd)this.post({t:'mout',s:'stop'});this.playing=false;this.seqRelease();this.tieNext=false;this.halfAt=0;this.post({t:'pl',v:false});this.post({t:'st',i:-1});}
+    arpNow(){return this.arp&&!this.seqReq;}
+    arpSeq(){const h=this.arpHeld.slice().sort((a,b)=>a-b);if(!h.length)return h;const md=this.arpMode;
+      if(md===0||md===3)return h;if(md===1)return h.slice().reverse();
+      if(md===2){const d=h.slice().reverse();return h.length>2?d.concat(h.slice(1,-1)):d;}
+      const two=md<6?h.concat(h.map(n=>n+12)):h.map(n=>n-12).concat(h);return (md===4||md===6)?two:two.reverse();}
+    postPl(){this.post({t:'pl',v:this.playing,seq:this.playing&&!this.modeArp,arp:this.playing&&this.modeArp});}
+    setSeq(on){this.seqReq=!!on;this.refresh();}
+    refresh(){const want=this.seqReq||(this.arp&&this.arpHeld.length>0);
+      if(want&&!this.playing)this.seqStart();else if(!want&&this.playing)this.seqStop();
+      else if(want&&this.playing&&this.modeArp!==this.arpNow()){this.seqRelease();this.tieNext=false;this.step=-1;this.stepCount=-1;this.arpIdx=0;this.pc=0;this.halfAt=0;this.sinceP=0;this.advance();this.postPl();}}
+    seqStart(){if(!this.extCmd)this.post({t:'mout',s:'start'});this.playing=true;this.transpose=0;this.step=-1;this.stepCount=-1;this.arpIdx=0;this.tieNext=false;this.pc=0;this.halfAt=0;this.sinceP=0;this.advance();this.postPl();}
+    seqStop(){if(!this.extCmd)this.post({t:'mout',s:'stop'});this.playing=false;this.seqRelease();this.tieNext=false;this.halfAt=0;this.postPl();this.post({t:'st',i:-1});}
     stepDur(i){const tv=this.tempoCV>=0?this.tempoCV:this.p.tempo;const bpm=40+tv*200;const base=this.sr*15/bpm;const sw=Math.max(-.6,Math.min(.6,(this.p.swing-.5)*1.2));return (i%2===0)?base*(1+sw):base*(1-sw);}
     advance(){
-      if(this.arp)this.step++;
+      this.modeArp=this.arpNow();
+      if(this.modeArp)this.step++;
       else{const len=Math.max(1,this.pat.len);if(this.step<0||this.step>=len)this.step=this.dir>0?0:len-1;else this.step=(this.step+this.dir+len)%len;}
       this.stepCount++;
       this.curDur=this.src==='int'?this.stepDur(this.step):this.extPeriod;if(this.src==='int'){this.ckLeft=6;this.ckGap=this.curDur/6;this.ckCnt=0;}else this.ckLeft=0;
       this.sc=0;this.gc=0;this.subIdx=0;this.rndCV=Math.random()*5;this.trigStep(this.step);
-      this.post({t:'st',i:this.arp?-1:this.step});
+      this.post({t:'st',i:this.modeArp?-1:this.step});
     }
     trigStep(i){
       this.rN=1;this.subLen=this.curDur;this.gFrac=.5;
-      if(this.arp){
-        const h=this.arpHeld.slice().sort((a,b)=>a-b);
+      if(this.modeArp){
+        const h=this.arpSeq();
         if(!h.length){this.seqRelease();this.tieNext=false;this.lastN=-1;return;}
-        this.seqOn(h[this.arpIdx++%h.length],false,0);this.tieNext=false;this.lastN=this.seqNote;this.lastA=false;this.lastGl=0;return;
+        this.gFrac=this.arpGate;
+        this.seqOn(this.arpMode===3?h[(Math.random()*h.length)|0]:h[this.arpIdx++%h.length],false,0);this.tieNext=false;this.lastN=this.seqNote;this.lastA=false;this.lastGl=0;return;
       }
       const len=Math.max(1,this.pat.len),st=this.pat.steps[i]||{r:true};
       const ni=((i+this.dir)%len+len)%len,nx=this.pat.steps[ni];
       const tiedIn=this.tieNext;
       if(this.mute||st.r){this.seqRelease();this.tieNext=false;this.lastN=-1;return;}
-      const acc=!!(st.a||this.accAll),n=st.n+this.transpose,g=st.g||4,gl=+st.gl||0;
+      const acc=!!(st.a||this.accAll),n=Math.max(0,Math.min(127,st.n+this.transpose)),g=st.g||4,gl=+st.gl||0;
       if(tiedIn&&this.seqNote>=0){if(!(st.t||n===this.seqNote))this.seqLegato(n,acc,gl);}
       else this.seqOn(n,acc,gl);
       this.tieNext=len>1&&!!nx&&!nx.r&&(g>=8||!!nx.t);
@@ -368,7 +384,7 @@ function makeEngine(){
         else if(c.clockType===5)this.src=tP?'trig':midiRecent?'midi':'int';
         else this.src='int';}
       let edge=false;
-      if(tP){const g=o0[im[I.tempo]]>3.2;edge=c.clockEdge===1?(!g&&this.lClk):(g&&!this.lClk);this.lClk=g;}
+      if(tP){const g=o0[im[I.tempo]]>2.5;edge=c.clockEdge===1?(!g&&this.lClk):(g&&!this.lClk);this.lClk=g;}
       if(!this.playing)return;
       this.sinceP++;
       if(this.holdStep)return;
@@ -418,9 +434,9 @@ function makeEngine(){
       this.lph+=lr/sr;if(this.lph>=1)this.lph-=Math.floor(this.lph);
       const tri=1-4*Math.abs(this.lph-.5),squ=this.lph<.5?1:-1,lfo=p.lfoShape?tri:squ;
       if(nCab){
-        if(im[I.playStop]>=0){const g=o0[im[I.playStop]]>3.2;if(g&&!this.lPlay){if(this.playing)this.seqStop();else this.seqStart();}this.lPlay=g;}
-        if(im[I.reset]>=0){const g=o0[im[I.reset]]>3.2;if(g&&!this.lRst){this.step=-1;if(this.playing)this.advance();}this.lRst=g;}
-        this.jackHold=im[I.hold]>=0&&o0[im[I.hold]]>3.2;
+        if(im[I.playStop]>=0){const g=o0[im[I.playStop]]>2.5;if(g&&!this.lPlay)this.setSeq(true);else if(!g&&this.lPlay)this.setSeq(false);this.lPlay=g;}
+        if(im[I.reset]>=0){const g=o0[im[I.reset]]>2.5;if(g&&!this.lRst){this.step=-1;if(this.playing)this.advance();}this.lRst=g;}
+        this.jackHold=im[I.hold]>=0&&o0[im[I.hold]]>2.5;
       }else this.jackHold=false;
       this.seqTick(o0);
       const aCV=this.assignCV();
@@ -435,7 +451,7 @@ function makeEngine(){
         pv+=freqOff+v.det+v.dr;
         if(im[I.oscFM]>=0)pv+=o[im[I.oscFM]]*.2;
         let g=v.gate;
-        if(im[I.envGate]>=0)g=o[im[I.envGate]]>3.2;
+        if(im[I.envGate]>=0)g=o[im[I.envGate]]>2.5;
         if(g&&(!v.lastG||v.trig))v.stage=1;else if(!g&&v.lastG)v.stage=3;
         v.trig=false;v.lastG=g;
         let e=v.env;
@@ -490,7 +506,7 @@ function makeEngine(){
         let vc=im[I.vcaCV]>=0?o[im[I.vcaCV]]*.2:(vcaOn?1:e);if(vc<0)vc=0;
         const out=f*vc*(.55+.45*v.vel+.25*v.accent);
         sum+=out;
-        const m1=im[I.mix1]>=0?o[im[I.mix1]]:5,m2=im[I.mix2]>=0?o[im[I.mix2]]:0;
+        const m1=im[I.mix1]>=0?o[im[I.mix1]]:0,m2=im[I.mix2]>=0?o[im[I.mix2]]:5;
         let xm=ps.vcMix;if(im[I.vcMixCV]>=0){xm+=o[im[I.vcMixCV]]*.2;xm=xm<0?0:xm>1?1:xm;}
         const mult=im[I.multIn]>=0?o[im[I.multIn]]:0;
         o[0]=mult;o[1]=mult;o[2]=pul*5;o[3]=saw*5;o[4]=e*8;o[5]=nz*5;o[6]=out*5;o[7]=tri*5;o[8]=squ*5;
@@ -582,7 +598,7 @@ for(let i=0;i<64;i++)state.pats.push(i===0?demoPattern():blankPattern());
 const ui={mode:'kybd',shift:false,shiftHeld:false,shiftUsed:false,page:0,autoPage:true,sel:-1,rec:false,recPos:0,recN:0,playing:false,arp:false,arpLatch:false,sus:false,kbBase:48,pend:null,cur:-1,
   patSel:null,setEnd:false,hold:false,mute:false,accAll:false,rev:false,ratchet:1,ledShow:null,ledT:0,down:new Map(),lastPress:{},setMode:null,saveMode:null};
 try{const sv=JSON.parse(localStorage.getItem('s3340-v3')||'null');if(sv){Object.assign(state.p,sv.p||{});Object.assign(state.s,sv.s||{});state.cables=sv.cables||[];state.nv=sv.nv||1;
-  if(sv.pats&&sv.pats.length===64)state.pats=sv.pats;state.work=sv.work||null;state.bank=sv.bank||0;state.pat=sv.pat||0;state.zoom=sv.zoom||1;state.kb=sv.kb!==false;Object.assign(state.cfg,sv.cfg||{});Object.assign(state.midi,sv.midi||{});}}catch(e){}
+  if(sv.pats&&sv.pats.length===64)state.pats=sv.pats;state.work=sv.work||null;state.bank=sv.bank||0;state.pat=sv.pat||0;state.zoom=sv.zoom||1;state.kb=sv.kb!==false;Object.assign(state.cfg,sv.cfg||{});Object.assign(state.midi,sv.midi||{});if(sv.arpMode!=null)state.arpMode=sv.arpMode|0;if(sv.arpGate!=null)state.arpGate=+sv.arpGate;}}catch(e){}
 const fixP=P=>{P.steps.forEach(s=>{if(s.g==null)s.g=4;if(s.rt==null)s.rt=1;s.gl=+s.gl||0;});if(P.sw==null)P.sw=.5;};
 state.pats.forEach(fixP);if(!state.work)state.work=JSON.parse(JSON.stringify(state.pats[state.bank*8+state.pat]));fixP(state.work);
 let saveT=0;
@@ -618,7 +634,7 @@ async function startAudio(){
 function pushAll(){
   for(const k in state.p)send({t:'p',k,v:state.p[k]});
   for(const k in state.s)send({t:'p',k,v:state.s[k]});
-  send({t:'nv',v:state.nv});sendCables();sendPat();send({t:'arp',v:ui.arp});
+  send({t:'nv',v:state.nv});sendCables();sendPat();send({t:'arp',v:ui.arp});send({t:'arpMode',v:state.arpMode|0});send({t:'arpGate',v:state.arpGate==null?.5:state.arpGate});
   send({t:'cfg',v:state.cfg});send({t:'mute',v:ui.mute});send({t:'accAll',v:ui.accAll});send({t:'rev',v:ui.rev});send({t:'ratchet',v:ui.ratchet});
   bridgeReady();
 }
@@ -628,7 +644,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx&&ctx.
 function onEngine(m){
   if(m.t==='mclk'){clkOut([0xF8]);return;}if(m.t==='mout'){clkOut([m.s==='start'?0xFA:0xFC]);return;}if(m.t==='tapv'){toTable({kind:'synth-tapv',v:m.v});return;}
   if(m.t==='st'){ui.cur=m.i;if(ui.playing&&ui.autoPage&&!ui.rec&&m.i>=0)ui.page=Math.floor(m.i/8);renderSeq();}
-  else if(m.t==='pl'){ui.playing=m.v;if(!m.v){ui.cur=-1;ui.hold=false;}renderSeq();}
+  else if(m.t==='pl'){ui.playing=m.seq==null?m.v:!!m.seq;ui.arpRun=!!m.arp;if(!ui.playing){ui.cur=-1;ui.hold=false;}renderSeq();}
   else if(m.t==='nout'){noteOut(m.n,m.on,m.v);}
   else if(m.t==='lfo'){const l=$('lfoLed');if(l)l.style.opacity=.12+.88*(m.v*.5+.5);}
 }
@@ -809,6 +825,7 @@ function editTarget(){if(ui.sel>=0)return ui.sel;if(ui.rec&&ui.recN>0)return (ui
 function tempoAlt(){
   const et=editTarget();
   if(et>=0){const s=pat().steps[et];return {alt:true,get:()=>(s.g-1)/7,set:v=>{s.g=1+Math.round(v*7);sendPat();flashLeds('n',s.g,'r');},label:()=>'Step '+(et+1)+' · GATE LENGTH '+s.g+'/8'+(s.g===8?' (legato al successivo)':''),def:3/7};}
+  if((ui.shift||ui.shiftHeld)&&ui.arp&&ui.arpRun){ui.shiftUsed=true;return {alt:true,get:()=>state.arpGate==null?.5:state.arpGate,set:v=>{state.arpGate=Math.max(.05,Math.min(.98,v));send({t:'arpGate',v:state.arpGate});saveSoon();},label:()=>'ARP GATE LENGTH '+Math.round((state.arpGate==null?.5:state.arpGate)*100)+' %',def:.5,after:()=>{if(!ui.shiftHeld)ui.shift=false;renderSeq();}};}
   if(ui.shift||ui.shiftHeld){ui.shiftUsed=true;return {alt:true,get:()=>state.p.swing,set:v=>{setParam('swing',v);pat().sw=v;saveSoon();},label:()=>'SWING  '+PARAMS.swing.f(state.p.swing),def:.5,after:()=>{if(!ui.shiftHeld)ui.shift=false;renderSeq();}};}
   return null;
 }
@@ -856,8 +873,8 @@ function setupSeq(){
     if(ui.setMode)return;
     if(sh||ui.mode==='step'){ui.setEnd=true;lcd('SET END: tocca il pad dell\'ultimo step (pagina '+(ui.page+1)+')');return;}
     const dbl=now-(ui.lastPress.as||-1e9)<350;
-    if(dbl){ui.arp=true;ui.arpLatch=true;send({t:'arp',v:true,latch:true});lcd('ARP + HOLD (doppio tocco): suona un accordo');return;}
-    ui.arp=!ui.arp;ui.arpLatch=false;send({t:'arp',v:ui.arp});lcd(ui.arp?'ARP attivo: tieni premute più note (doppio tocco = ARP HOLD)':'ARP disattivato');},
+    if(dbl){ui.arp=true;ui.arpLatch=true;send({t:'arp',v:true,latch:true});lcd('ARP HOLD (doppio tocco): suona le note, l\'arpeggio continua da solo · PLAY/STOP alterna sequencer e arpeggio');return;}
+    ui.arp=!ui.arp;ui.arpLatch=false;send({t:'arp',v:ui.arp});lcd(ui.arp?'ARP attivo: tieni premute più note (doppio tocco = ARP HOLD) · in play suona il sequencer':'ARP disattivato');},
     ()=>{if(ui.mode==='step'&&!ui.setEndUsed){} ui.setEndUsed=false;});
   /* PATTERN/BANK */
   on('pb',()=>{const sh=useShift();ui.lastPb={shift:sh};
@@ -874,8 +891,7 @@ function setupSeq(){
     const sh=ui.shift||ui.shiftHeld;
     if(sh){ui.shiftUsed=true;clearTimeout(ui.plT);ui.plLong=false;ui.plT=setTimeout(()=>{ui.plLong=true;if(!ui.shiftHeld)ui.shift=false;
         ui.saveMode={bank:state.bank,pat:state.pat};ui.patSel=null;lcd('SALVA: scegli il pattern (pad 1–8), PATTERN+pad per il banco, poi SHIFT+REC');renderSeq();},2000);return;}
-    if(ui.arp){lcd('In ARP il sequencer parte tenendo premute le note');return;}
-    if(ui.rec)toggleRec();send({t:'play'});},
+    if(ui.rec)toggleRec();send({t:'play',btn:true});},
     ()=>{if(ui.plT){clearTimeout(ui.plT);ui.plT=0;if(!ui.plLong&&!ui.saveMode){if(!ui.shiftHeld)ui.shift=false;ui.rev=!ui.rev;send({t:'rev',v:ui.rev});lcd(ui.rev?'Riproduzione al contrario':'Riproduzione in avanti');}}});
   /* REC: SHIFT+REC in save mode = save */
   on('rc',()=>{const sh=useShift();
@@ -923,11 +939,13 @@ function chordResetPattern(init){
   else{state.work=clone(state.pats[pidx()]);ui.sel=-1;sendPat();lcd('Modifiche annullate: richiamato il pattern salvato (PATTERN+RESET)');}
   renderSeq();
 }
+const ARPN=['UP 1','DOWN 1','DOWN e UP','RANDOM','UP (+1 ottava)','DOWN (+1 ottava)','UP (−1 ottava)','DOWN (−1 ottava)'];
 function arrow(d){
   if(ui.setMode){ui.setMode.page=(ui.setMode.page+d+4)%4;setLcd();renderSeq();return;}
   const sv=ui.saveMode;
   if(ui.patSel==='bank'){if(sv){sv.bank=(sv.bank+d+8)%8;lcd('SALVA in banco '+(sv.bank+1));}else{loadPattern((state.bank+d+8)%8,state.pat);lcd('Banco '+(state.bank+1));}}
   else if(ui.patSel==='pattern'){if(sv){sv.pat=(sv.pat+d+8)%8;lcd('SALVA in pattern '+(sv.pat+1));}else{loadPattern(state.bank,(state.pat+d+8)%8);lcd('Pattern '+(state.pat+1));}}
+  else if(ui.arp&&ui.arpRun){state.arpMode=(((state.arpMode|0)+d)%8+8)%8;send({t:'arpMode',v:state.arpMode});saveSoon();lcd('ARP '+(state.arpMode+1)+': '+ARPN[state.arpMode]);flashLeds('one',state.arpMode,'g',1300);}
   else{const ob=ui.kbBase;ui.kbBase=Math.max(12,Math.min(96,ui.kbBase+12*d));buildKb();const moved=ui.kbBase!==ob;if(moved&&ui.playing&&!ui.arp)send({t:'oct',d:ui.kbBase-ob});lcd('Ottava: '+noteName(ui.kbBase)+(moved&&ui.playing&&!ui.arp?' · sequencer trasposto':''));flashLeds('one',ui.kbBase/12-1,'r',900);}
   renderSeq();
 }
@@ -946,9 +964,9 @@ function renderSeq(){
   B.sh.classList.toggle('on',ui.shift||ui.shiftHeld);
   B.rc.classList.toggle('on',ui.rec||(!!ui.saveMode&&blink));
   B.pl.classList.toggle('on',ui.playing);
-  B.hr.classList.toggle('on',ui.hold||ui.mute||ui.sus||ui.arpLatch||!!ui.setMode);
+  B.hr.classList.toggle('on',ui.hold||ui.mute||ui.sus||!!ui.setMode);
   B.ra.classList.toggle('on',ui.accAll);
-  B.as.classList.toggle('on',ui.arp);B.as.classList.toggle('arm',ui.setEnd);
+  B.as.classList.toggle('on',ui.arp&&(!ui.arpLatch||blink));B.as.classList.toggle('arm',ui.setEnd);
   B.pb.classList.toggle('on',!!ui.patSel);
   B.ky.classList.toggle('on',ui.mode==='kybd'&&!ui.setMode);B.st.classList.toggle('on',ui.mode==='step'&&!ui.setMode);
   /* LEDs */
@@ -977,7 +995,7 @@ function renderSeq(){
     p.className=c;
   });
 }
-setInterval(()=>{if(ui.saveMode||ui.setMode||ui.mode==='step')renderSeq();},300);
+setInterval(()=>{if(ui.saveMode||ui.setMode||ui.mode==='step'||(ui.arp&&ui.arpLatch))renderSeq();},300);
 
 /* ===================== EXTRA KEYBOARD ===================== */
 const isBlack=n=>[1,3,6,8,10].includes(((n%12)+12)%12);
@@ -1097,6 +1115,22 @@ function setupMidiDlg(){
 /* ===================== HEADER ===================== */
 function setNv(n){state.nv=Math.max(1,Math.min(16,n));$('nvVal').textContent=state.nv===1?'1 MONO':state.nv+' VOCI';send({t:'nv',v:state.nv});saveSoon();}
 const UKEY='s3340-user',UAPP='s3340',UFILE='S3340-preset.json';const SNAP=()=>({p:{...state.p},s:{...state.s},cables:state.cables.map(c=>[c[0],c[1]]),nv:state.nv});
+
+/* ---------- finestre di dialogo nella pagina (confirm/prompt nativi sono bloccati in alcuni contesti, es. artifact o app) ---------- */
+function uiAsk(msg,opt){opt=opt||{};return new Promise(res=>{
+  const ov=document.createElement('div');ov.className='uiask';ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px';
+  const bx=document.createElement('div');bx.style.cssText='background:#1d1f22;color:#eee;border:1px solid #555;border-radius:10px;max-width:440px;width:100%;padding:18px;font:15px/1.45 system-ui,sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.6)';
+  const p=document.createElement('div');p.style.cssText='white-space:pre-line;margin-bottom:14px';p.textContent=msg;bx.appendChild(p);
+  let inp=null;if(opt.input){inp=document.createElement('input');inp.type='text';inp.value=opt.def||'';inp.maxLength=40;inp.style.cssText='width:100%;box-sizing:border-box;padding:9px;font-size:16px;border-radius:6px;border:1px solid #666;background:#111;color:#fff;margin-bottom:14px';bx.appendChild(inp);}
+  const row=document.createElement('div');row.style.cssText='display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap';
+  const mk=(t,main)=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.style.cssText='padding:9px 16px;border-radius:6px;font-size:15px;cursor:pointer;border:1px solid '+(main?'#e8833a':'#666')+';background:'+(main?'#e8833a':'#2a2c30')+';color:'+(main?'#111':'#eee');return b;};
+  const bc=mk(opt.cancel||'Annulla',false),bo=mk(opt.ok||'OK',true);row.appendChild(bc);row.appendChild(bo);bx.appendChild(row);ov.appendChild(bx);
+  const done=v=>{document.removeEventListener('keydown',kd,true);ov.remove();res(v);};
+  const kd=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();done(opt.input?null:false);}else if(e.key==='Enter'){e.preventDefault();e.stopPropagation();done(opt.input?inp.value:true);}else e.stopPropagation();};
+  bo.onclick=()=>done(opt.input?inp.value:true);bc.onclick=()=>done(opt.input?null:false);
+  document.addEventListener('keydown',kd,true);document.body.appendChild(ov);if(inp){inp.focus();inp.select();}else bo.focus();});}
+const uiConfirm=(m,ok,cancel)=>uiAsk(m,{ok,cancel});
+const uiPrompt=(m,d)=>uiAsk(m,{input:true,def:d});
 /* ---------- preset utente ---------- */
 const SESS=()=>({p:{...state.p},s:{...state.s},cables:state.cables.map(c=>[c[0],c[1]]),nv:state.nv,pats:state.pats,work:state.work,bank:state.bank,pat:state.pat,cfg:{...state.cfg}});const LSKEY='s3340-v3';const okSess=se=>se&&typeof se.p==='object'&&(!se.pats||Array.isArray(se.pats)&&se.pats.length===64);
 let UP={},curUser=null;try{UP=JSON.parse(localStorage.getItem(UKEY)||'{}')||{};}catch(e){UP={};}
@@ -1111,11 +1145,11 @@ function fillPresets(){const sel=$('preset');sel.innerHTML='';
   if(curUser&&UP[curUser])opt('!del','✕ Elimina «'+curUser+'»',gm);
   opt('!exp','⇩ Esporta sessione (preset, pattern, impostazioni)',gm);
   opt('!imp','⇧ Importa sessione o preset da file…',gm);}
-function saveUser(){let n=prompt('Nome del preset:',curUser||'');if(n==null)return;n=n.trim().slice(0,40);if(!n){lcd('Nome vuoto: preset non salvato');return;}
-  if(UP[n]&&n!==curUser&&!confirm('Esiste già un preset «'+n+'». Lo sovrascrivo?'))return;
-  const wp=confirm('Salvare nel preset anche il pattern su cui stai lavorando?\n\nOK = suono e pattern\nAnnulla = solo il suono');
+async function saveUser(){let n=await uiPrompt('Nome del preset:',curUser||'');if(n==null)return;n=n.trim().slice(0,40);if(!n){lcd('Nome vuoto: preset non salvato');return;}
+  if(UP[n]&&n!==curUser&&!(await uiConfirm('Esiste già un preset «'+n+'». Lo sovrascrivo?','Sovrascrivi')))return;
+  const wp=await uiConfirm('Salvare nel preset anche il pattern su cui stai lavorando?','Suono e pattern','Solo il suono');
   UP[n]=SNAP();if(wp)UP[n].pat=clone(state.work);if(!saveUP())return;curUser=n;fillPresets();lcd('Preset salvato: '+n+(wp?' (suono e pattern)':' (solo suono)'));}
-function delUser(){const n=curUser;if(!n||!UP[n])return;if(!confirm('Elimino il preset «'+n+'»?'))return;delete UP[n];saveUP();curUser=null;fillPresets();lcd('Preset eliminato: '+n);}
+async function delUser(){const n=curUser;if(!n||!UP[n])return;if(!(await uiConfirm('Elimino il preset «'+n+'»?','Elimina')))return;delete UP[n];saveUP();curUser=null;fillPresets();lcd('Preset eliminato: '+n);}
 function restoreSession(se){clearTimeout(saveT);const cur=JSON.parse(JSON.stringify(state));for(const k in se){if(k==='p'||k==='s'||k==='cfg')cur[k]={...(cur[k]||{}),...se[k]};else cur[k]=se[k];}
   cur.cables=(se.cables||[]).map((c,i)=>[c[0],c[1],i]);try{localStorage.setItem(LSKEY,JSON.stringify(cur));}catch(e){lcd('Impossibile ripristinare: memoria del browser piena o bloccata');return;}
   lcd('Sessione ripristinata: ricarico…');setTimeout(()=>location.reload(),300);}
@@ -1131,17 +1165,17 @@ function impUser(){const inp=document.createElement('input');inp.type='file';inp
     if(!d||d.app!==UAPP||typeof d.presets!=='object'){lcd('Questo file non contiene dati di questo simulatore');return;}
     let c=0;for(const n in d.presets){const P=d.presets[n];if(P&&typeof P.p==='object'&&n.trim()){UP[n.trim().slice(0,40)]=P;c++;}}
     saveUP();fillPresets();
-    if(okSess(d.session)&&confirm('Il file contiene anche la sessione salvata'+(d.saved?' il '+new Date(d.saved).toLocaleString('it-IT'):'')+' (suono'+(LSKEY==='s3340-v3'?', pattern e impostazioni':' e sequenza')+').\nRipristinarla? Sostituisce quella attuale.')){restoreSession(d.session);return;}
+    if(okSess(d.session)){uiConfirm('Il file contiene anche la sessione salvata'+(d.saved?' il '+new Date(d.saved).toLocaleString('it-IT'):'')+' (suono'+(LSKEY==='s3340-v3'?', pattern e impostazioni':' e sequenza')+').\nRipristinarla? Sostituisce quella attuale.','Ripristina','Solo i preset').then(ok=>{if(ok)restoreSession(d.session);else lcd('Importati '+c+' preset');});return;}
     lcd('Importati '+c+' preset');});};inp.click();}
 function setupPresetMenu(){const sel=$('preset');fillPresets();
   sel.onchange=()=>{const v=sel.value;sel.value='';sel.blur();if(!v)return;
     if(v==='!save'){saveUser();return;}if(v==='!del'){delUser();return;}if(v==='!exp'){expUser();return;}if(v==='!imp'){impUser();return;}
     startAudio();
-    if(v.startsWith('u:')){const n=v.slice(2);if(!UP[n])return;applyPreset(n,UP[n],askPat(UP[n]));curUser=n;fillPresets();return;}
-    applyPreset(v,null,askPat(PRESETS[v]));curUser=null;fillPresets();};
+    if(v.startsWith('u:')){const n=v.slice(2);if(!UP[n])return;askPat(UP[n]).then(wp=>{applyPreset(n,UP[n],wp);curUser=n;fillPresets();});return;}
+    askPat(PRESETS[v]).then(wp=>{applyPreset(v,null,wp);curUser=null;fillPresets();});};
   $('savePre').onclick=saveUser;}
 const workDirty=()=>{const w=JSON.stringify(state.work);return w!==JSON.stringify(state.pats[pidx()])&&w!==state.workSrc;};
-function askPat(P){if(!P||!P.pat)return false;if(!workDirty())return true;return confirm('Il pattern su cui stai lavorando ha modifiche non salvate.\n\nOK = carica suono e pattern del preset (le modifiche si perdono)\nAnnulla = carica solo il suono e tieni il tuo pattern');}
+function askPat(P){if(!P||!P.pat)return Promise.resolve(false);if(!workDirty())return Promise.resolve(true);return uiConfirm('Il pattern su cui stai lavorando ha modifiche non salvate.\n\nOK = carica suono e pattern del preset (le modifiche si perdono)\nAnnulla = carica solo il suono e tieni il tuo pattern','Suono e pattern','Solo il suono');}
 function applyPreset(name,P,withPat){
   P=P||PRESETS[name];if(!P)return;
   for(const k in PARAMS)if(k!=='tempo'&&k!=='swing')state.p[k]=PARAMS[k].d;
@@ -1221,7 +1255,7 @@ const I18N=[
 ['PANNELLO','PANEL'],['Manopole','Knobs'],['Levette','Switches'],['Modifica step','Step edit'],['IMPOSTAZIONI','SETTINGS'],
 [': trascina su/giù. Doppio tocco = valore iniziale. Desktop: rotellina, Shift = fine.',': drag up/down. Double tap = default value. Desktop: mouse wheel, Shift = fine.'],
 [': tocca per commutare (o tocca la scritta del lato voluto).',': tap to flip (or tap the label of the side you want).'],
-[": tocca un'uscita (etichetta chiara) e poi un ingresso (etichetta rossa), oppure trascina. Tocca un ingresso collegato per staccare il cavo. Normalizzazioni: KB CV→OSC CV, GATE→ENV GATE, NOISE→EXT AUDIO, +5V→MIX 1, ENV→VCA.",": tap an output (light label) and then an input (red label), or drag. Tap a patched input to remove the cable. Normalizations: KB CV→OSC CV, GATE→ENV GATE, NOISE→EXT AUDIO, +5V→MIX 1, ENV→VCA."],
+[": tocca un'uscita (etichetta chiara) e poi un ingresso (etichetta rossa), oppure trascina. Tocca un ingresso collegato per staccare il cavo. Normalizzazioni: KB CV→OSC CV, GATE→ENV GATE, NOISE→EXT AUDIO, +5V→MIX 2, ENV→VCA.",": tap an output (light label) and then an input (red label), or drag. Tap a patched input to remove the cable. Normalizations: KB CV→OSC CV, GATE→ENV GATE, NOISE→EXT AUDIO, +5V→MIX 2, ENV→VCA."],
 ["(pulsante in alto): canale di ingresso 1–16, MIDI THRU verso una porta d'uscita, invio delle note di pad e sequencer (USB OUT), clock MIDI in ingresso. Web MIDI funziona in Chrome/Edge su computer e Android, non su iPhone.","(button at the top): input channel 1–16, MIDI THRU to an output port, pad and sequencer notes out (USB OUT), MIDI clock in and out. Web MIDI works in Chrome/Edge on computers and Android, not on iPhone."],
 ["è l'uscita audio del browser.","is the browser's audio output."],
 [": tocca il LED per sospendere/riattivare l'audio.",": tap the LED to pause/resume audio."],
@@ -1274,8 +1308,8 @@ const I18N=[
 [' (traspone il sequencer)',' (transposes the sequencer)'],[' (suono e pattern)',' (sound and pattern)'],[' (solo suono)',' (sound only)'],
 [': ora tocca ',': now tap '],[': scegli con i pad 1–8 o ◀ ▶',': choose with pads 1–8 or ◀ ▶'],
 ["ARP HOLD: l'arpeggio continua dopo aver lasciato i tasti","ARP HOLD: the arpeggio keeps going after you release the keys"],
-['ARP + HOLD (doppio tocco): suona un accordo','ARP + HOLD (double tap): play a chord'],
-['ARP attivo: tieni premute più note (doppio tocco = ARP HOLD)','ARP on: hold several notes (double tap = ARP HOLD)'],['ARP disattivato','ARP off'],
+['ARP HOLD (doppio tocco): suona le note, l\'arpeggio continua da solo · PLAY/STOP alterna sequencer e arpeggio','ARP HOLD (double tap): play notes, the arpeggio keeps going hands-free · PLAY/STOP switches between sequencer and arpeggio'],
+['ARP attivo: tieni premute più note (doppio tocco = ARP HOLD) · in play suona il sequencer','ARP on: hold several notes (double tap = ARP HOLD) · while playing the sequencer plays'],['ARP disattivato','ARP off'],
 ['Accento globale disattivato','Global accent off'],['Accento su tutti gli step','Accent on all steps'],
 ['Audio attivo','Audio on'],['Audio in pausa','Audio paused'],
 ['Cavo staccato: ','Cable removed: '],['Cavo: ','Cable: '],["Collega un'uscita a un ingresso",'Connect an output to an input'],["un'uscita",'an output'],['un ingresso','an input'],
@@ -1291,7 +1325,7 @@ const I18N=[
 ['MIDI OUT/THRU: non disponibile nel browser','MIDI OUT/THRU: not available in the browser'],
 ['Modifiche annullate: richiamato il pattern salvato (PATTERN+RESET)','Changes undone: saved pattern recalled (PATTERN+RESET)'],
 ['Modo KEYBOARD: i pad suonano le note','KEYBOARD mode: the pads play notes'],['Modo STEP: SHIFT+pad per modificare uno step','STEP mode: SHIFT+pad to edit a step'],
-['Mute disattivato','Mute off'],['Nome vuoto: preset non salvato','Empty name: preset not saved'],['Nota ','Note '],['Ottava: ','Octave: '],[' · sequencer trasposto',' · sequencer transposed'],
+['Mute disattivato','Mute off'],['Nome vuoto: preset non salvato','Empty name: preset not saved'],['Nota ','Note '],['Ottava: ','Octave: '],["Modalità di arpeggio: mentre l'arpeggio suona, ◀ ▶ scelgono una delle 8 modalità (i LED 1–8 mostrano il numero): 1 UP, 2 DOWN, 3 DOWN e UP, 4 RANDOM, 5 UP +1 ottava, 6 DOWN +1 ottava, 7 UP −1 ottava, 8 DOWN −1 ottava. SHIFT+TEMPO = durata delle note dell'arpeggio. LED ARP fisso = ARP, lampeggiante = ARP HOLD.","Arpeggio modes: while the arpeggio plays, ◀ ▶ choose one of 8 modes (LEDs 1–8 show the number): 1 UP, 2 DOWN, 3 DOWN and UP, 4 RANDOM, 5 UP +1 octave, 6 DOWN +1 octave, 7 UP −1 octave, 8 DOWN −1 octave. SHIFT+TEMPO = arpeggio note length. ARP LED steady = ARP, blinking = ARP HOLD."],['DOWN e UP','DOWN and UP'],[' ottava)',' octave)'],[' · sequencer trasposto',' · sequencer transposed'],
 ['PHONES: uscita audio verso cuffie/altoparlanti del dispositivo','PHONES: audio output to the device headphones/speakers'],
 ['PHONES: uscita audio verso gli altoparlanti / cuffie del dispositivo','PHONES: audio output to the device speakers / headphones'],
 ['Pagina automatica','Automatic page'],['Pagina ','Page '],['Panic: tutte le note spente','Panic: all notes off'],
@@ -1314,7 +1348,7 @@ const I18N=[
 ["Nuova versione scaricata: chiudi e riapri l'app",'New version downloaded: close and reopen the app'],["Pronta per l'uso offline",'Ready for offline use'],
 ['MIDI n/d','MIDI n/a'],[' VOCI',' VOICES'],
 /* ---- dialogs ---- */
-['Nome del preset:','Preset name:'],['Esiste già un preset «','A preset named «'],['». Lo sovrascrivo?','» already exists. Overwrite it?'],['Elimino il preset «','Delete the preset «'],
+['Nome del preset:','Preset name:'],['Suono e pattern','Sound and pattern'],['Solo il suono','Sound only'],['Sovrascrivi','Overwrite'],['Ripristina','Restore'],['Solo i preset','Presets only'],['Elimina','Delete'],['Annulla','Cancel'],['Esiste già un preset «','A preset named «'],['». Lo sovrascrivo?','» already exists. Overwrite it?'],['Elimino il preset «','Delete the preset «'],
 ['Salvare nel preset anche il pattern su cui stai lavorando?\n\nOK = suono e pattern\nAnnulla = solo il suono','Also save the pattern you are working on in the preset?\n\nOK = sound and pattern\nCancel = sound only'],
 ['Il pattern su cui stai lavorando ha modifiche non salvate.\n\nOK = carica suono e pattern del preset (le modifiche si perdono)\nAnnulla = carica solo il suono e tieni il tuo pattern','The pattern you are working on has unsaved changes.\n\nOK = load the preset sound and pattern (your changes are lost)\nCancel = load the sound only and keep your pattern'],
 ['Il file contiene anche la sessione salvata','The file also contains the saved session'],[' il ',' on '],[' (suono',' (sound'],[', pattern e impostazioni',', patterns and settings'],[' e sequenza',' and sequence'],
