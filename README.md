@@ -17,11 +17,12 @@ A browser simulator of an analog semi-modular synthesizer laid out like the Behr
 - **LFO** triangle / square with selectable destinations.
 - **Full patch bay** with internal connections (normalizations): a cable in an input jack replaces the internal connection.
 - **32-step sequencer**: gate 1–8, rest, accent, glide, ratchet, swing, live recording, 8 banks × 8 patterns.
-- **Arpeggiator**, HOLD, live transposition.
+- **Arpeggiator** with 8 modes (up, down, down-and-up, random, and up/down over an extra octave above or below), ARP HOLD, arpeggio note length, live transposition.
 - **Poly Chain**: 1 to 16 voices.
 - **Sequencer settings**: tempo input (1PPS, 2PPQ, 24/48 PPQN, CV), assign out, clock type and clock edge.
 - **MIDI** in/out via Web MIDI (channel, THRU, note output, MIDI clock output with start/stop).
 - **On-screen keyboard** and computer keyboard (A W S E D F …, Z/X for octave, space = PLAY).
+- **Effects pedalboard** (FX button, below the keyboard): the nine effect types found in Vital — overdrive, compressor, filter (LP/BP/HP with LFO, free or synced), EQ, chorus, flanger, phaser, delay (free or synced to the sequencer tempo) and reverb. Add the ones you want from the «＋ Add effect» menu, remove them with ×, reorder by dragging the name or with ◀ ▶; each pedal has its own footswitch and LED; settings and order are remembered.
 - **Factory presets**, each with its own example pattern, and **user presets**, with export and import of the **whole session**.
 
 ## Ranges (from the official specifications)
@@ -36,9 +37,8 @@ A browser simulator of an analog semi-modular synthesizer laid out like the Behr
 | Sustain, ENV out | 0–8 V |
 | Glide | 0–2 s |
 | Inputs / outputs | ±5 V; gate 0/+5 V |
-| Trigger inputs (PLAY/STOP, RESET, HOLD, ENV GATE, TEMPO as clock) | active above 3.2 V |
 
-Values not given in the specifications (sequencer tempo 40–240 BPM, swing, knob curves) are the author's choices.
+Values not given in the specifications are the author's choices: sequencer tempo 40–240 BPM, swing, knob curves, and the trigger-input threshold of 2.5 V (PLAY/STOP, RESET, HOLD, ENV GATE, TEMPO as clock). PLAY/STOP is level-sensitive: above 2.5 V the sequencer plays, below it stops.
 
 ## Quick start
 

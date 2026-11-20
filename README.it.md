@@ -17,11 +17,12 @@ Simulatore da browser di un sintetizzatore semi-modulare analogico con schema is
 - **LFO** triangolo / quadra con destinazioni selezionabili.
 - **Patch bay** completa con collegamenti interni (normalizzazioni): un cavo nel jack di ingresso sostituisce il collegamento interno.
 - **Sequencer a 32 step**: gate 1–8, pausa, accento, glide, ratchet, swing, registrazione dal vivo, 8 banchi × 8 pattern.
-- **Arpeggiatore**, HOLD, trasposizione dal vivo.
+- **Arpeggiatore** con 8 modalità (su, giù, giù e su, casuale, su/giù con un'ottava in più sopra o sotto), ARP HOLD, durata delle note, trasposizione dal vivo.
 - **Poly Chain**: da 1 a 16 voci.
 - **Impostazioni** del sequencer: tempo input (1PPS, 2PPQ, 24/48 PPQN, CV), assign out, tipo e fronte del clock.
 - **MIDI** in/out tramite Web MIDI (canale, THRU, invio note e clock MIDI con start/stop).
 - **Tastiera a schermo** e tastiera del computer (A W S E D F …, Z/X per l'ottava, spazio = PLAY).
+- **Pedaliera effetti** (pulsante FX, sotto la tastiera): i nove tipi di effetto presenti in Vital — overdrive, compressore, filtro (LP/BP/HP con LFO libero o sincronizzato), EQ, chorus, flanger, phaser, delay (libero o sincronizzato al tempo del sequencer) e riverbero. Si aggiungono dal menu «＋ Aggiungi effetto», si tolgono con ×, si riordinano trascinando il nome o con ◀ ▶; ogni pedale ha interruttore e LED; impostazioni e ordine vengono ricordati.
 - **Preset** di fabbrica e **preset personali**, con esportazione e importazione della **sessione completa**.
 
 ## Avvio rapido
@@ -55,6 +56,24 @@ Il simulatore è una PWA: dopo la prima apertura funziona anche senza connession
 
 - **iPhone / iPad (Safari)**: apri la pagina, tocca Condividi → **Aggiungi alla schermata Home**.
 - **Android (Chrome)**: menu ⋮ → **Installa app**.
+
+Dopo un aggiornamento dei file su GitHub, apri l'app una volta con la connessione attiva per scaricare la nuova versione.
+
+## Pubblicazione su GitHub Pages
+
+1. Carica il contenuto di questa cartella nel repository (deve essere **pubblico**, o serve un piano che consenta Pages su repository privati).
+2. Settings → **Pages** → Source: *Deploy from a branch*, branch `main`, cartella `/ (root)`.
+3. Dopo un paio di minuti la pagina è disponibile all'indirizzo indicato da GitHub.
+
+## File
+
+| File | Contenuto |
+|---|---|
+| `index.html` | Il simulatore completo (interfaccia, motore audio, font incorporati) |
+| `sw.js` | Service worker per l'uso offline |
+| `manifest.webmanifest` | Dati dell'app installabile |
+| `icon-*.png` | Icone dell'app |
+| `OFL-*.txt` | Licenze dei font Barlow e JetBrains Mono (SIL Open Font License) |
 
 ## Compatibilità
 
