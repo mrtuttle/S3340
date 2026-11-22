@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>S-3340 · Simulatore semi-modulare</title>
+<title>S-3340 · Semi-modular Synth Simulator</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,6 +21,7 @@
 #recBtn{background:linear-gradient(180deg,#e0453a,#a8231b);border-color:#ff7a70;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.35);font-variant-numeric:tabular-nums}#recBtn:hover{filter:brightness(1.12)}#recBtn.rec{animation:recbl 1s steps(2,start) infinite;box-shadow:0 0 12px rgba(255,60,50,.8)}@keyframes recbl{50%{background:#5a0f0b}}
 body.mlearn #panel .kn,body.mlearn #panel .swc,body.mlearn #panel .tg,body.mlearn #fxBoard .fxk,body.mlearn #fxBoard .fxsw,body.mlearn #fxBoard .fxsync{cursor:crosshair}body.mlearn #panel .kn,body.mlearn #panel .swc,body.mlearn #panel .tg{filter:drop-shadow(0 0 6px rgba(150,120,255,.55))}.mlsel{outline:4px solid #ffcc33!important;outline-offset:4px;border-radius:14px}#fxBoard .fxk,#fxBoard .fxsw,#fxBoard .fxsync{position:relative}[data-ml]::after{content:attr(data-ml);position:absolute;top:-4px;right:-10px;background:#7a5cff;color:#fff;font:700 9px/1.3 system-ui,sans-serif;padding:0 4px;border-radius:5px;pointer-events:none;z-index:6;white-space:nowrap;letter-spacing:0}#panel [data-ml]::after{font-size:30px;padding:2px 9px;border-radius:12px;top:-22px;right:-34px}#mlBar{position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:9000;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);background:#241c4a;border:2px solid #8a6cff;border-radius:10px;padding:8px 12px;color:#fff;font:500 14px system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.6)}#mlBar b{color:#ffcc33;letter-spacing:.1em}#mlBar .mlmsg{min-width:240px}
 #mMon{margin:10px 0;padding:8px 10px;background:#0d0f11;border:1px solid #3a3f44;border-radius:8px;font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;color:#cfe}#mMon .mmh{font:700 11px system-ui,sans-serif;letter-spacing:.12em;color:#8a6cff;margin-bottom:4px}#mMon .mmp{font:13px/1.4 system-ui,sans-serif;color:#ddd;margin-bottom:6px}#mMon .mml{max-height:170px;overflow:auto}#mMon .mml span{color:#777}#mMon .mml i{color:#888}#mMon .bad{color:#ff8a7a}#mMon .dim{color:#888}
+#recDir{min-width:0;padding-left:9px;padding-right:9px;margin-left:-4px}#recDir.on2{background:linear-gradient(180deg,#e0453a,#a8231b);border-color:#ff7a70}
 </style>
 <style>
 :root{--bg:#121315;--ink:#ece5d3;--dim:#948e82;--acc:#ff5b3a;--acc2:#3cc7b5;--line:#363a40;--panel2:#2a2d31}
@@ -94,7 +95,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
 .pad{border-radius:7px;cursor:pointer;touch-action:none}
 .pad.blk{width:68px;height:60px;background:linear-gradient(#26272a,#0b0b0c);border:2px solid #3a3c40}
 .pad.wht{width:70px;height:56px;background:linear-gradient(#a2301b,#6b1a0d);border:2px solid #2a0a05}
-.pad.blk.down{background:linear-gradient(#6a6d72,#3a3c40)}
+.pad.blk.down{background:linear-gradient(#6a6d72,#3a3c40)}.pad.blk.echo{background:linear-gradient(#8a8d93,#55585d);box-shadow:0 0 12px rgba(255,120,80,.9),inset 0 0 0 2px #ff7a55}.pad.wht.echo{background:linear-gradient(#ff7a55,#ff4a25);box-shadow:0 0 16px #ff5b3a}
 .pad.wht.down,.pad.wht.lit{background:linear-gradient(#ff7a55,#ff4a25);box-shadow:0 0 16px #ff5b3a}
 .pad.wht.dim{background:linear-gradient(#3a1a14,#24100b)}
 .pad.wht.tie{background:linear-gradient(#7f2a18,#53190c)}
@@ -187,6 +188,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
   <p class="mrow" style="color:var(--dim);font-size:13px">Web MIDI funziona in Chrome/Edge su computer e Android; Safari e iPhone non lo supportano.</p>
   <div id="mMon"><div class="mmh">MONITOR MIDI</div><div class="mmp"></div><div class="mml"></div></div>
   <p class="mrow"><button class="btn" id="mlBtn" style="background:linear-gradient(180deg,#8a6cff,#5b3fd6);color:#fff;border-color:#a48cff">Assegna manopole e switch (MIDI LEARN)</button> <span id="mlCount" style="color:var(--dim)"></span></p>
+  <p class="mrow"><button class="btn" id="mlExp">⇩ Esporta assegnazioni</button> <button class="btn" id="mlImp">⇧ Importa assegnazioni</button></p>
   <p class="mrow" style="color:var(--dim);font-size:13px">Clicca, poi muovi una manopola o premi un pulsante del controller: funziona per le manopole e gli switch del pannello e per manopole, interruttori e SYNC dei pedali. Esc per uscire.</p>
   <p><button class="btn on" id="midiClose">Chiudi</button></p>
 </div></div>
@@ -203,7 +205,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
   <button class="btn" id="fsBtn">⛶</button>
   <button class="btn" id="panic">PANIC</button>
   <button class="btn" id="fxBtn" title="Effetti">FX</button>
-  <button class="btn" id="recBtn" title="Registra l'uscita audio">● REC</button>
+  <button class="btn" id="recBtn" title="Registra l'uscita audio">● REC</button><button class="btn" id="recDir" title="Cartella delle registrazioni">📁</button>
   <button class="btn" id="langBtn" title="Passa all’italiano">IT</button>
   <button class="btn" id="helpBtn">?</button>
   <button class="btn" id="midiSt">MIDI –</button>
@@ -994,13 +996,16 @@ function renderSeq(){
   leds.forEach((l,i)=>l.className='sled c'+(cls[i]?' '+cls[i]:''));
   /* pads */
   const showSteps=ui.mode==='step'||ui.rec||ui.sel>=0;
+  const echoOn=!ui.setMode&&!ui.patSel&&!ui.saveMode&&!showSteps&&!ui.playing,ew=new Set(),eb=new Set();
+  if(echoOn)for(const k in down){const n=+k,rel=n-ui.kbBase,r=(rel>=0&&rel<=12)?rel:((n%12)+12)%12;const wi=[0,2,4,5,7,9,11,12].indexOf(r);if(wi>=0)ew.add(wi);else{const bi=[1,3,6,8,10].indexOf(r);if(bi>=0)eb.add(bi);}}
+  bpads.forEach((p,i)=>p.classList.toggle('echo',eb.has(i)));
   wpads.forEach((p,i)=>{
     const idx=ui.page*8+i,s=P.steps[idx];let c='pad wht c';
     if(ui.setMode){const v=state.cfg[SETPAGES[ui.setMode.page].k];c+=((v-1)%8===i)?' lit':' dim';p.innerHTML='';}
     else if(ui.patSel||ui.saveMode){const sv=ui.saveMode;const n=ui.patSel==='bank'?(sv?sv.bank:state.bank):(sv?sv.pat:state.pat);c+=i===n?' lit':' dim';p.innerHTML='';}
     else if(showSteps){c+=(idx>=P.len?' dim':s.r?' dim':s.g>=8?' tie':'')+(idx===ui.cur?' cur':'')+(idx===ui.sel?' sel blink':'')+(ui.rec&&idx===ui.recPos?' blink':'');
       p.innerHTML=(idx<P.len&&!s.r?`<span class="nn">${noteName(s.n)}</span>`:'')+(s.a&&!s.r&&idx<P.len?'<b class="acc"></b>':'');}
-    else{c+=(ui.playing&&ui.cur>=0&&ui.cur%8===i&&Math.floor(ui.cur/8)===ui.page?' cur':'');p.innerHTML='';}
+    else{c+=(ui.playing&&ui.cur>=0&&ui.cur%8===i&&Math.floor(ui.cur/8)===ui.page?' cur':'')+(ew.has(i)?' echo':'');p.innerHTML='';}
     if(p.classList.contains('down'))c+=' down';
     p.className=c;
   });
@@ -1028,7 +1033,7 @@ function keyOn(n,vel,fromMidi){
   down[n]=(down[n]||0)+1;if(down[n]>1)return;
   if(!fromMidi&&!ui.playing&&!ui.arp)noteOut(n,true,Math.round((vel||.8)*127));
   if(keyEls[n])keyEls[n].classList.add('down');
-  send({t:'on',n,vel:vel||.8});
+  send({t:'on',n,vel:vel||.8});renderSeq();
   if(ui.setMode)return;
   if(ui.sel>=0&&!ui.playing){const s=pat().steps[ui.sel];s.n=n;s.r=false;sendPat();renderSeq();lcd('Step '+(ui.sel+1)+' → '+noteName(n));}
   else if(ui.sel>=0&&ui.playing){lcd('In play si modificano gate, pausa, accento, ratchet e glide: la nota solo a sequencer fermo');}
@@ -1036,7 +1041,7 @@ function keyOn(n,vel,fromMidi){
   else if(ui.playing&&!ui.arp)lcd('Trasposizione '+((n-60)>=0?'+':'')+(n-60)+' semitoni');
   else lcd('Nota '+noteName(n));
 }
-function keyOff(n,fromMidi){if(!down[n])return;down[n]--;if(down[n]>0)return;delete down[n];if(!fromMidi)noteOut(n,false);if(keyEls[n])keyEls[n].classList.remove('down');send({t:'off',n});}
+function keyOff(n,fromMidi){if(!down[n])return;down[n]--;if(down[n]>0)return;delete down[n];if(!fromMidi)noteOut(n,false);if(keyEls[n])keyEls[n].classList.remove('down');send({t:'off',n});renderSeq();}
 function setupKb(){
   const kb=$('kb'),ptr=new Map();
   const noteAt=e=>{const t=document.elementFromPoint(e.clientX,e.clientY);return t&&t.dataset&&t.dataset.n!=null&&kb.contains(t)?+t.dataset.n:null;};
@@ -1142,7 +1147,7 @@ function uiAsk(msg,opt){opt=opt||{};return new Promise(res=>{
 const uiConfirm=(m,ok,cancel)=>uiAsk(m,{ok,cancel});
 const uiPrompt=(m,d)=>uiAsk(m,{input:true,def:d});
 /* ---------- preset utente ---------- */
-const SESS=()=>({p:{...state.p},s:{...state.s},cables:state.cables.map(c=>[c[0],c[1]]),nv:state.nv,pats:state.pats,work:state.work,bank:state.bank,pat:state.pat,cfg:{...state.cfg}});const LSKEY='s3340-v3';const okSess=se=>se&&typeof se.p==='object'&&(!se.pats||Array.isArray(se.pats)&&se.pats.length===64);
+const SESS=()=>({p:{...state.p},s:{...state.s},cables:state.cables.map(c=>[c[0],c[1]]),nv:state.nv,pats:state.pats,work:state.work,bank:state.bank,pat:state.pat,cfg:{...state.cfg},midiMap:state.midi.map||{},fx:state.fx});const LSKEY='s3340-v3';const okSess=se=>se&&typeof se.p==='object'&&(!se.pats||Array.isArray(se.pats)&&se.pats.length===64);
 let UP={},curUser=null;try{UP=JSON.parse(localStorage.getItem(UKEY)||'{}')||{};}catch(e){UP={};}
 function saveUP(){try{localStorage.setItem(UKEY,JSON.stringify(UP));return true;}catch(e){lcd('Impossibile salvare: memoria del browser piena o bloccata');return false;}}
 function fillPresets(){const sel=$('preset');sel.innerHTML='';
@@ -1153,29 +1158,72 @@ function fillPresets(){const sel=$('preset');sel.innerHTML='';
   if(names.length){const gu=grp('I miei preset');names.forEach(n=>opt('u:'+n,'★ '+n,gu));}
   const gm=grp('Gestione');opt('!save','＋ Salva il suono attuale…',gm);
   if(curUser&&UP[curUser])opt('!del','✕ Elimina «'+curUser+'»',gm);
-  opt('!exp','⇩ Esporta sessione (preset, pattern, impostazioni)',gm);
+  opt('!exp','⇩ Esporta sessione…',gm);
   opt('!imp','⇧ Importa sessione o preset da file…',gm);}
 async function saveUser(){let n=await uiPrompt('Nome del preset:',curUser||'');if(n==null)return;n=n.trim().slice(0,40);if(!n){lcd('Nome vuoto: preset non salvato');return;}
   if(UP[n]&&n!==curUser&&!(await uiConfirm('Esiste già un preset «'+n+'». Lo sovrascrivo?','Sovrascrivi')))return;
   const wp=await uiConfirm('Salvare nel preset anche il pattern su cui stai lavorando?','Suono e pattern','Solo il suono');
   UP[n]=SNAP();if(wp)UP[n].pat=clone(state.work);if(!saveUP())return;curUser=n;fillPresets();lcd('Preset salvato: '+n+(wp?' (suono e pattern)':' (solo suono)'));}
 async function delUser(){const n=curUser;if(!n||!UP[n])return;if(!(await uiConfirm('Elimino il preset «'+n+'»?','Elimina')))return;delete UP[n];saveUP();curUser=null;fillPresets();lcd('Preset eliminato: '+n);}
-function restoreSession(se){clearTimeout(saveT);const cur=JSON.parse(JSON.stringify(state));for(const k in se){if(k==='p'||k==='s'||k==='cfg')cur[k]={...(cur[k]||{}),...se[k]};else cur[k]=se[k];}
-  cur.cables=(se.cables||[]).map((c,i)=>[c[0],c[1],i]);try{localStorage.setItem(LSKEY,JSON.stringify(cur));}catch(e){lcd('Impossibile ripristinare: memoria del browser piena o bloccata');return;}
+function restoreSession(se){clearTimeout(saveT);const cur=JSON.parse(JSON.stringify(state));for(const k in se){if(k==='midiMap'){cur.midi={...(cur.midi||{}),map:se[k]};continue;}if(k==='p'||k==='s'||k==='cfg')cur[k]={...(cur[k]||{}),...se[k]};else cur[k]=se[k];}
+  if(se.cables)cur.cables=se.cables.map((c,i)=>[c[0],c[1],i]);try{localStorage.setItem(LSKEY,JSON.stringify(cur));}catch(e){lcd('Impossibile ripristinare: memoria del browser piena o bloccata');return;}
   lcd('Sessione ripristinata: ricarico…');setTimeout(()=>location.reload(),300);}
-async function expUser(){const txt=JSON.stringify({app:UAPP,v:2,saved:new Date().toISOString(),presets:UP,session:SESS()},null,1);
-  const fn=UFILE.replace('preset','sessione');const msg='Sessione esportata in '+fn+' ('+Object.keys(UP).length+' preset'+(LSKEY==='s3340-v3'?', 64 pattern':'')+')';
+const SGROUPS=LSKEY==='s3340-v3'?[
+  {k:'presets',l:()=>'Preset utente ('+Object.keys(UP).length+')'},
+  {k:'sound',l:()=>'Suono attuale: manopole, switch, cavi e voci',s:['p','s','cables','nv']},
+  {k:'pats',l:()=>'Pattern del sequencer (64)',s:['pats','work','bank','pat']},
+  {k:'cfg',l:()=>'Impostazioni del sequencer (tempo, clock, modalità)',s:['cfg']},
+  {k:'fx',l:()=>'Effetti della pedaliera',s:['fx']},
+  {k:'midi',l:()=>'Assegnazioni MIDI ('+Object.keys(state.midi.map||{}).length+')',s:['midiMap']}]:[
+  {k:'presets',l:()=>'Preset utente ('+Object.keys(UP).length+')'},
+  {k:'sound',l:()=>'Suono attuale e sequenza: manopole, switch e cavi',s:['p','cables']},
+  {k:'fx',l:()=>'Effetti della pedaliera',s:['fx']},
+  {k:'midi',l:()=>'Assegnazioni MIDI ('+Object.keys(state.midi.map||{}).length+')',s:['midiMap']}];
+const SPARTN_IT={presets:'preset utente',sound:LSKEY==='s3340-v3'?'suono':'suono e sequenza',pats:'pattern',cfg:'impostazioni',fx:'effetti',midi:'assegnazioni MIDI'},SPARTN_EN={presets:'user presets',sound:LSKEY==='s3340-v3'?'sound':'sound and sequence',pats:'patterns',cfg:'settings',fx:'effects',midi:'MIDI assignments'};
+const SPARTN=new Proxy({},{get:(o,k)=>((typeof LANG!=='undefined'&&LANG==='en')?SPARTN_EN:SPARTN_IT)[k]});
+const sessStamp=()=>{const d=new Date(),z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'-'+z(d.getHours())+z(d.getMinutes());};
+const sessDefName=()=>UFILE.replace('-preset.json','')+'-session-'+sessStamp();
+const sessClean=(n,def)=>{n=String(n||'').replace(/[\/\\:*?"<>|\u0000-\u001f]/g,'').replace(/\s+/g,' ').trim().replace(/\.json$/i,'');return (n||def).slice(0,120)+'.json';};
+function uiChoose(title,nameDef){return new Promise(res=>{
+  const ov=document.createElement('div');ov.className='uiask';ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px';
+  const bx=document.createElement('div');bx.style.cssText='background:#1d1f22;color:#eee;border:1px solid #555;border-radius:10px;max-width:460px;width:100%;padding:18px;font:15px/1.45 system-ui,sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.6)';
+  const h=document.createElement('div');h.style.cssText='font-weight:700;margin-bottom:10px';h.textContent=title;bx.appendChild(h);
+  let nm=null;if(nameDef!=null){const lb=document.createElement('label');lb.style.cssText='display:block;margin:0 0 10px';lb.innerHTML='<span style="display:block;font-size:13px;color:#aaa;margin-bottom:4px">Nome del file</span>';
+    nm=document.createElement('input');nm.type='text';nm.value=nameDef;nm.maxLength=120;nm.style.cssText='width:100%;box-sizing:border-box;padding:8px;font-size:15px;border-radius:6px;border:1px solid #666;background:#111;color:#fff';lb.appendChild(nm);bx.appendChild(lb);}
+  const boxes=SGROUPS.map(g=>{const lb=document.createElement('label');lb.style.cssText='display:flex;gap:10px;align-items:center;padding:6px 2px;cursor:pointer';
+    const cb=document.createElement('input');cb.type='checkbox';cb.checked=true;cb.dataset.k=g.k;cb.style.cssText='width:18px;height:18px;margin:0;accent-color:#e8833a';
+    const sp=document.createElement('span');sp.textContent=g.l();lb.appendChild(cb);lb.appendChild(sp);bx.appendChild(lb);return cb;});
+  const row=document.createElement('div');row.style.cssText='display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:14px';
+  const mk=(t,main)=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.style.cssText='padding:9px 16px;border-radius:6px;font-size:15px;cursor:pointer;border:1px solid '+(main?'#e8833a':'#666')+';background:'+(main?'#e8833a':'#2a2c30')+';color:'+(main?'#111':'#eee');return b;};
+  const l=document.createElement('div');l.style.cssText='display:flex;gap:8px';const r=document.createElement('div');r.style.cssText='display:flex;gap:8px';
+  const ba=mk('Tutto',false),bn=mk('Nessuno',false),bc=mk('Annulla',false),bo=mk('Esporta',true);l.appendChild(ba);l.appendChild(bn);r.appendChild(bc);r.appendChild(bo);row.appendChild(l);row.appendChild(r);bx.appendChild(row);ov.appendChild(bx);
+  const upd=()=>{const any=boxes.some(b=>b.checked);bo.disabled=!any;bo.style.opacity=any?1:.4;bo.style.cursor=any?'pointer':'default';};
+  boxes.forEach(b=>b.onchange=upd);ba.onclick=()=>{boxes.forEach(b=>b.checked=true);upd();};bn.onclick=()=>{boxes.forEach(b=>b.checked=false);upd();};
+  const done=v=>{document.removeEventListener('keydown',kd,true);ov.remove();res(v);};
+  const kd=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();done(null);}else if(e.key==='Enter'&&!bo.disabled){e.preventDefault();e.stopPropagation();bo.click();}else e.stopPropagation();};
+  bc.onclick=()=>done(null);bo.onclick=()=>{if(bo.disabled)return;const r=boxes.filter(b=>b.checked).map(b=>b.dataset.k);r.name=nm?nm.value:null;done(r);};
+  document.addEventListener('keydown',kd,true);document.body.appendChild(ov);bo.focus();upd();});}
+async function expUser(){const usePick=!!window.showSaveFilePicker&&FSOK(),def=sessDefName();const parts=await uiChoose('Esporta sessione: scegli cosa salvare nel file',usePick?null:def);if(!parts||!parts.length)return;
+  const full=SESS(),se={};SGROUPS.forEach(g=>{if(g.s&&parts.includes(g.k))g.s.forEach(k=>{if(k in full)se[k]=full[k];});});
+  const obj={app:UAPP,v:3,saved:new Date().toISOString(),parts,presets:parts.includes('presets')?UP:{}};if(Object.keys(se).length)obj.session=se;
+  const txt=JSON.stringify(obj,null,1);
+  const fn=sessClean(parts.name,def);const what=' ('+parts.map(k=>SPARTN[k]).join(', ')+')';const msg='Sessione esportata in '+fn+what;
+  if(usePick){try{const h=await window.showSaveFilePicker({id:'synth-sess',startIn:'documents',suggestedName:def+'.json',types:[{description:'Session (JSON)',accept:{'application/json':['.json']}}]});
+      const w=await h.createWritable();await w.write(txt);await w.close();lcd('Sessione esportata in '+h.name+what);return;}
+    catch(e){if(e&&e.name==='AbortError'){lcd('Esportazione annullata');return;}}}
   if(window.claude&&typeof window.claude.use==='function'){let dl=null;try{dl=await window.claude.use('downloads');}catch(e){}
     if(dl){try{await dl.save({filename:fn,data:txt});lcd(msg);}catch(e){lcd(e&&e.code==='declined'?'Esportazione annullata':'Esportazione non disponibile qui');}return;}}
   const blob=new Blob([txt],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);lcd(msg);}
+function sessParts(se){const out=[];SGROUPS.forEach(g=>{if(g.s&&g.s.some(k=>k in se))out.push(SPARTN[g.k]);});return out;}
 function impUser(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
   inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;f.text().then(t=>{let d;try{d=JSON.parse(t);}catch(e){lcd('File non valido');return;}
-    if(!d||d.app!==UAPP||typeof d.presets!=='object'){lcd('Questo file non contiene dati di questo simulatore');return;}
-    let c=0;for(const n in d.presets){const P=d.presets[n];if(P&&typeof P.p==='object'&&n.trim()){UP[n.trim().slice(0,40)]=P;c++;}}
+    if(!d||d.app!==UAPP||(typeof d.presets!=='object'&&!d.session)){lcd('Questo file non contiene dati di questo simulatore');return;}
+    let c=0;for(const n in (d.presets||{})){const P=d.presets[n];if(P&&typeof P.p==='object'&&n.trim()){UP[n.trim().slice(0,40)]=P;c++;}}
     saveUP();fillPresets();
-    if(okSess(d.session)){uiConfirm('Il file contiene anche la sessione salvata'+(d.saved?' il '+new Date(d.saved).toLocaleString('it-IT'):'')+' (suono'+(LSKEY==='s3340-v3'?', pattern e impostazioni':' e sequenza')+').\nRipristinarla? Sostituisce quella attuale.','Ripristina','Solo i preset').then(ok=>{if(ok)restoreSession(d.session);else lcd('Importati '+c+' preset');});return;}
+    const se=d.session;if(se&&typeof se==='object'&&(!se.p||typeof se.p==='object')&&(!se.pats||okSess({p:{},pats:se.pats}))&&sessParts(se).length){const pr=sessParts(se);
+      uiConfirm((c?'Il file contiene anche: ':'Il file contiene: ')+pr.join(', ')+(d.saved?' (salvato il '+new Date(d.saved).toLocaleString('it-IT')+')':'')+'.\nRipristinare queste parti? Sostituiscono quelle attuali; il resto resta com\'è.','Ripristina',c?'Solo i preset':'Annulla').then(ok=>{if(ok)restoreSession(se);else lcd(c?'Importati '+c+' preset':'Importazione annullata');});return;}
     lcd('Importati '+c+' preset');});};inp.click();}
 function setupPresetMenu(){const sel=$('preset');fillPresets();
   sel.onchange=()=>{const v=sel.value;sel.value='';sel.blur();if(!v)return;
@@ -1410,8 +1458,9 @@ let fxPanelOpen=()=>false,fxDrawVals=()=>{};
   async function save(blob,fn){
     if(inArt()){let dl=null;try{dl=await window.claude.use('downloads');}catch(e){}
       if(dl){try{await dl.save({filename:fn,data:blob});lcd('Registrazione salvata: '+fn);}catch(e){lcd(e&&e.code==='declined'?'Salvataggio annullato':'Salvataggio non disponibile qui');}return;}}
+    if(window.recDirSave&&await window.recDirSave(blob,fn))return;
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();
-    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);lcd('Registrazione salvata: '+fn);}
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);if(!window.__recDirMsg)lcd('Registrazione salvata: '+fn);}
   function start(){
     if(typeof ctx==='undefined'||!ctx||!fxLim){lcd('Accendi prima l\'audio (AUDIO), poi premi REC');return;}
     if(ctx.state==='suspended')ctx.resume();
@@ -1543,6 +1592,19 @@ let fxPanelOpen=()=>false,fxDrawVals=()=>{};
   if(midiAcc)midiAcc.inputs.forEach(i=>i.onmidimessage=onMidi);
   window.midiLearn={enter,exit};
   const b=document.getElementById('mlBtn');if(b)b.onclick=()=>{const d=document.getElementById('midiDlg');if(d)d.classList.remove('show');enter();};
+  async function expMap(){const n=count();if(!n){lcd('Nessuna assegnazione da esportare');return;}
+    const txt=JSON.stringify({app:FX_NAME+'-midimap',v:1,saved:new Date().toISOString(),map:MAP()},null,1),fn=FX_NAME+'-midi-map.json',msg='Assegnazioni MIDI esportate in '+fn+' ('+n+')';
+    if(window.claude&&typeof window.claude.use==='function'){let dl=null;try{dl=await window.claude.use('downloads');}catch(e){}
+      if(dl){try{await dl.save({filename:fn,data:txt});lcd(msg);}catch(e){lcd(e&&e.code==='declined'?'Esportazione annullata':'Esportazione non disponibile qui');}return;}}
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'application/json'}));a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);lcd(msg);}
+  function impMap(){const i=document.createElement('input');i.type='file';i.accept='.json,application/json';
+    i.onchange=()=>{const fl=i.files&&i.files[0];if(!fl)return;const r=new FileReader();r.onload=async()=>{let d=null;try{d=JSON.parse(r.result);}catch(e){}
+      const m=d&&(d.map||(d.session&&d.session.midiMap));
+      if(!m||typeof m!=='object'){lcd('File non valido: nessuna assegnazione MIDI');return;}
+      if(d.app&&d.app.indexOf(FX_NAME)!==0){lcd('Queste assegnazioni sono di un altro strumento');return;}
+      const n=Object.keys(m).length;const ok=!count()||(typeof uiConfirm==='function'?await uiConfirm('Sostituire le '+count()+' assegnazioni attuali con le '+n+' del file?'):true);if(!ok)return;
+      state.midi.map=m;saveSoon();badges();upd();lcd('Importate '+n+' assegnazioni MIDI');};r.readAsText(fl);};i.click();}
+  {const e=document.getElementById('mlExp');if(e)e.onclick=expMap;const g=document.getElementById('mlImp');if(g)g.onclick=impMap;}
   const upd=()=>{const s=document.getElementById('mlCount');if(s)s.textContent=count()?count()+' controlli assegnati':'nessun controllo assegnato';};
   const ms=document.getElementById('midiSt');if(ms)ms.addEventListener('click',upd);upd();
 })();
@@ -1578,8 +1640,45 @@ let fxPanelOpen=()=>false,fxDrawVals=()=>{};
   setInterval(draw,150);
   const ms=document.getElementById('midiSt');if(ms)ms.addEventListener('click',()=>{dirty=true;setTimeout(draw,50);setTimeout(()=>{dirty=true;draw();},600);});
 })();
+/* ===================== CARTELLA REGISTRAZIONI / FOLDERS ===================== */
+const FSOK=()=>!(window.claude&&typeof window.claude.use==='function')&&window.isSecureContext;
+const fsIdb=(mode,fn)=>new Promise((res,rej)=>{let r;try{r=indexedDB.open('synth-fs',1);}catch(e){rej(e);return;}r.onupgradeneeded=()=>r.result.createObjectStore('h');
+  r.onerror=()=>rej(r.error);r.onsuccess=()=>{try{const tx=r.result.transaction('h',mode),st=tx.objectStore('h');const q=fn(st);tx.oncomplete=()=>res(q&&q.result);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);}catch(e){rej(e);}};});
+const fsGet=k=>fsIdb('readonly',st=>st.get(k)).catch(()=>null),fsPut=(k,v)=>fsIdb('readwrite',st=>st.put(v,k)).catch(()=>null),fsDel=k=>fsIdb('readwrite',st=>st.delete(k)).catch(()=>null);
+function uiAsk3(msg,btns){return new Promise(res=>{
+  const ov=document.createElement('div');ov.className='uiask';ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px';
+  const bx=document.createElement('div');bx.style.cssText='background:#1d1f22;color:#eee;border:1px solid #555;border-radius:10px;max-width:460px;width:100%;padding:18px;font:15px/1.45 system-ui,sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.6)';
+  const p=document.createElement('div');p.style.cssText='white-space:pre-line;margin-bottom:14px';p.textContent=msg;bx.appendChild(p);
+  const row=document.createElement('div');row.style.cssText='display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap';
+  const done=v=>{document.removeEventListener('keydown',kd,true);ov.remove();res(v);};
+  btns.forEach((b,i)=>{const e=document.createElement('button');e.type='button';e.textContent=b[1];const main=i===btns.length-1;e.style.cssText='padding:9px 16px;border-radius:6px;font-size:15px;cursor:pointer;border:1px solid '+(main?'#e8833a':'#666')+';background:'+(main?'#e8833a':'#2a2c30')+';color:'+(main?'#111':'#eee');e.onclick=()=>done(b[0]);row.appendChild(e);if(main)setTimeout(()=>e.focus(),0);});
+  bx.appendChild(row);ov.appendChild(bx);
+  const kd=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();done(null);}else e.stopPropagation();};
+  document.addEventListener('keydown',kd,true);document.body.appendChild(ov);});}
+(function(){
+  const btn=document.getElementById('recDir');if(!btn)return;
+  if(!window.showDirectoryPicker||!FSOK()){btn.remove();return;}
+  const KEY=FX_NAME+'-rec';let dir=null;
+  const show=()=>{btn.classList.toggle('on2',!!dir);btn.title=dir?'Registrazioni salvate in: '+dir.name:'Cartella delle registrazioni: Download (clicca per sceglierne un\'altra)';};
+  fsGet(KEY).then(h=>{if(h&&h.kind==='directory')dir=h;show();});show();
+  async function pick(){try{const h=await window.showDirectoryPicker({id:'synth-rec',mode:'readwrite',startIn:dir||'music'});dir=h;show();fsPut(KEY,h);lcd('Le registrazioni verranno salvate in: '+h.name);}
+    catch(e){if(e&&e.name!=='AbortError')lcd('Impossibile usare questa cartella');}}
+  btn.onclick=async()=>{
+    if(!dir){pick();return;}
+    const r=await uiAsk3('Le registrazioni vengono salvate nella cartella «'+dir.name+'».',[['dl','Usa Download'],['cancel','Annulla'],['pick','Scegli un\'altra cartella']]);
+    if(r==='pick')pick();else if(r==='dl'){dir=null;await fsDel(KEY);show();lcd('Le registrazioni verranno salvate in Download');}};
+  window.recDirSave=async(blob,fn)=>{window.__recDirMsg=false;if(!dir)return false;
+    try{let p=await dir.queryPermission({mode:'readwrite'});if(p!=='granted')p=await dir.requestPermission({mode:'readwrite'});
+      if(p!=='granted'){window.__recDirMsg=true;lcd('Permesso negato per «'+dir.name+'»: registrazione salvata in Download');return false;}
+      const fh=await dir.getFileHandle(fn,{create:true});const w=await fh.createWritable();await w.write(blob);await w.close();
+      lcd('Registrazione salvata in '+dir.name+'/'+fn);return true;}
+    catch(e){window.__recDirMsg=true;lcd('Cartella «'+dir.name+'» non disponibile: registrazione salvata in Download');return false;}};
+})();
 /* ===================== LINGUA / LANGUAGE (EN · IT) ===================== */
 const I18N=[
+['Nome del file','File name'],['Registrazioni salvate in: ','Recordings saved in: '],["Cartella delle registrazioni: Download (clicca per sceglierne un'altra)",'Recordings folder: Downloads (click to choose another)'],['Cartella delle registrazioni','Recordings folder'],['Le registrazioni verranno salvate in: ','Recordings will be saved in: '],['Impossibile usare questa cartella','Cannot use this folder'],['Le registrazioni vengono salvate nella cartella «','Recordings are saved in the folder «'],['Usa Download','Use Downloads'],["Scegli un'altra cartella",'Choose another folder'],['Le registrazioni verranno salvate in Download','Recordings will be saved in Downloads'],['Permesso negato per «','Permission denied for «'],['»: registrazione salvata in Download','»: recording saved in Downloads'],['Registrazione salvata in ','Recording saved in '],['Cartella «','Folder «'],['» non disponibile: registrazione salvata in Download','» not available: recording saved in Downloads'],['Sessione esportata in ','Session exported to '],
+['Esporta sessione: scegli cosa salvare nel file','Export session: choose what to save in the file'],['Preset utente (','User presets ('],['Suono attuale: manopole, switch, cavi e voci','Current sound: knobs, switches, cables and voices'],['Pattern del sequencer (64)','Sequencer patterns (64)'],['Impostazioni del sequencer (tempo, clock, modalità)','Sequencer settings (tempo, clock, modes)'],['Effetti della pedaliera','Pedalboard effects'],['Assegnazioni MIDI (','MIDI assignments ('],['Suono attuale e sequenza: manopole, switch e cavi','Current sound and sequence: knobs, switches and cables'],['Nessuno','None'],['Esporta','Export'],['Il file contiene anche: ','The file also contains: '],['Il file contiene: ','The file contains: '],['Ripristinare queste parti? Sostituiscono quelle attuali; il resto resta com\'è.','Restore these parts? They replace the current ones; everything else stays as it is.'],[' (salvato il ',' (saved on '],['Importazione annullata','Import cancelled'],['Tutto','All'],
+['Nessuna assegnazione da esportare','No assignments to export'],['Assegnazioni MIDI esportate in ','MIDI assignments exported to '],['File non valido: nessuna assegnazione MIDI','Invalid file: no MIDI assignments'],['Queste assegnazioni sono di un altro strumento','These assignments belong to another instrument'],['Sostituire le ','Replace the '],[' assegnazioni attuali con le ',' current assignments with the '],[' del file?',' from the file?'],['Importate ','Imported '],[' assegnazioni MIDI',' MIDI assignments'],['⇩ Esporta assegnazioni','⇩ Export assignments'],['⇧ Importa assegnazioni','⇧ Import assignments'],
 ['Questo browser non supporta il MIDI. Usa Chrome o Edge sul computer.','This browser does not support MIDI. Use Chrome or Edge on a computer.'],['Accesso al MIDI negato (','MIDI access denied ('],["). Se sei dentro Claude prova la versione offline; in Chrome controlla il lucchetto accanto all'indirizzo → MIDI → Consenti.",'). Inside Claude, try the offline version; in Chrome, click the padlock next to the address → MIDI → Allow.'],['Connessione al MIDI in corso…','Connecting to MIDI…'],['Ingressi:','Inputs:'],['Uscite:','Outputs:'],[' (scollegato)',' (disconnected)'],['nessuno — il controller non viene visto (cavo, driver, oppure la porta è occupata da un altro programma)','none — the controller is not seen (cable, driver, or the port is in use by another program)'],['Nessun messaggio ricevuto: muovi una manopola o premi un pulsante del controller.','No messages received: turn a knob or press a button on your controller.'],['MONITOR MIDI','MIDI MONITOR'],
 ['Clicca una manopola, uno switch o un pedale, poi muovi un controllo del controller.','Click a knob, a switch or a pedal, then move a control on your controller.'],['Collega il controller (Chrome o Edge), poi clicca un controllo e muovilo.','Connect your controller (Chrome or Edge), then click a control and move it.'],['Togli assegnazione','Remove assignment'],['Cancella tutte','Clear all'],['Clicca prima il controllo da liberare.','Click the control to free first.'],[': assegnazione tolta.',': assignment removed.'],[' non era assegnato.',' was not assigned.'],['Nessuna assegnazione da cancellare.','No assignments to clear.'],['Cancellare tutte le ','Clear all '],[' assegnazioni MIDI?',' MIDI assignments?'],['Tutte le assegnazioni cancellate.','All assignments cleared.'],['MIDI LEARN attivo: ','MIDI LEARN on: '],['MIDI LEARN terminato: ','MIDI LEARN off: '],[' assegnazioni',' assignments'],[': muovi un controllo del controller…',': move a control on your controller…'],[' (ora su ',' (now on '],['NOTA ','NOTE '],['Ricevuto ','Received '],['✓ Fine','✓ Done'],[': clicca prima il controllo da assegnare.',': click the control to assign first.'],['. Clicca un altro controllo, oppure Fine.','. Click another control, or Done.'],[' canale ',' channel '],['(canale ','(channel '],['Assegna manopole e switch (MIDI LEARN)','Assign knobs and switches (MIDI LEARN)'],[' controlli assegnati',' controls assigned'],['nessun controllo assegnato','no controls assigned'],['Clicca, poi muovi una manopola o premi un pulsante del controller: funziona per le manopole e gli switch del pannello e per manopole, interruttori e SYNC dei pedali. Esc per uscire.','Click a control, then turn a knob or press a button on your controller: works for panel knobs and switches and for pedal knobs, footswitches and SYNC. Esc to exit.'],
 ['Registrazione salvata: ','Recording saved: '],['Salvataggio annullato','Save cancelled'],['Salvataggio non disponibile qui','Saving not available here'],["Accendi prima l'audio (AUDIO), poi premi REC",'Turn the audio on first (AUDIO), then press REC'],['Registrazione in corso… premi di nuovo REC o R per fermare','Recording… press REC or R again to stop'],['Registrazione vuota','Empty recording'],['Preparo il file','Preparing the file'],['Registra l\'uscita audio (tasto R)','Record the audio output (R key)'],['Registra l\'uscita audio','Record the audio output'],
@@ -1598,7 +1697,7 @@ const I18N=[
 ['Pronto. Premi Accendi, poi PLAY/STOP.','Ready. Press Switch on, then PLAY/STOP.'],['Pronto.','Ready.'],
 ['PRESET…','PRESET…'],['Di fabbrica','Factory'],['I miei preset','My presets'],['Gestione','Manage'],
 ['＋ Salva il suono attuale…','＋ Save current sound…'],
-['⇩ Esporta sessione (preset, pattern, impostazioni)','⇩ Export session (presets, patterns, settings)'],
+['⇩ Esporta sessione…','⇩ Export session…'],
 ['⇩ Esporta sessione (preset e suono attuale)','⇩ Export session (presets and current sound)'],
 ['⇧ Importa sessione o preset da file…','⇧ Import session or presets from file…'],
 ['✕ Elimina «','✕ Delete «'],
@@ -1724,7 +1823,7 @@ const I18N=[
 ['Il file contiene anche la sessione salvata','The file also contains the saved session'],[' il ',' on '],[' (suono',' (sound'],[', pattern e impostazioni',', patterns and settings'],[' e sequenza',' and sequence'],
 ['.\nRipristinarla? Sostituisce quella attuale.','.\nRestore it? It replaces the current one.'],
 ];
-const I18N_TITLE={'S-3340 · Simulatore semi-modulare':'S-3340 · Semi-modular simulator','P-8 · Simulatore percussivo semi-modulare':'P-8 · Semi-modular percussion simulator'};
+const I18N_TITLE={};
 const I18N_SORTED=I18N.filter(p=>p[0]!==p[1]).sort((a,b)=>b[0].length-a[0].length);
 const I18N_EXACT=new Map(I18N);
 let LANG=(()=>{try{return localStorage.getItem('synth-lang')||'en';}catch(e){return 'en';}})();

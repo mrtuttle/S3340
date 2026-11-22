@@ -1,4 +1,6 @@
-# S-3340 · Simulatore semi-modulare
+# S-3340 · Semi-modular Synth Simulator
+
+*Simulatore di sintetizzatore semi-modulare*
 
 *[English](README.md) · Italiano*
 
@@ -34,10 +36,11 @@ Simulatore da browser di un sintetizzatore semi-modulare analogico con schema is
 
 ## Controller MIDI e registrazione
 
-- **MIDI LEARN** (computer, Chrome o Edge): apri **MIDI**, premi *Assegna manopole e switch (MIDI LEARN)*, clicca una manopola, uno switch, una manopola di un pedale, un interruttore a pedale o SYNC, poi muovi una manopola/un fader o premi un pulsante del controller. I badge viola mostrano il CC o la nota assegnati. *Togli assegnazione* libera il controllo scelto, *Cancella tutte* le toglie tutte, Esc o *Fine* per uscire. Le assegnazioni restano salvate nel browser.
+- **MIDI LEARN** (computer, Chrome o Edge): apri **MIDI**, premi *Assegna manopole e switch (MIDI LEARN)*, clicca una manopola, uno switch, una manopola di un pedale, un interruttore a pedale o SYNC, poi muovi una manopola/un fader o premi un pulsante del controller. I badge viola mostrano il CC o la nota assegnati. *Togli assegnazione* libera il controllo scelto, *Cancella tutte* le toglie tutte, Esc o *Fine* per uscire. Le assegnazioni si salvano da sole nel browser; *Esporta/Importa assegnazioni* nella finestra MIDI le salva in un file .json, ed *Esporta sessione* le include insieme agli effetti.
 - Manopole e fader impostano il valore direttamente; i pulsanti (momentanei o a levetta, CC o nota) commutano gli switch e accendono/spengono i pedali.
-- Novation Launch Control XL 3: usa un **Custom Mode** (lì gli encoder inviano CC assoluti); le modalità DAW servono ai programmi DAW.
-- **● REC** (o il tasto **R**) registra l'uscita finale, effetti compresi: WAV in questa versione offline, WebM/MP4 dentro claude.ai.
+- Se il controller ha più modalità, scegli quella utente/custom, in cui le manopole inviano normali messaggi CC; le modalità dedicate a un programma DAW potrebbero non inviare nulla di utilizzabile.
+- Il **MONITOR MIDI** nella finestra MIDI mostra le porte collegate e gli ultimi messaggi ricevuti: serve a verificare che il controller stia inviando.
+- **● REC** (o il tasto **R**) registra l'uscita finale, effetti compresi, e la salva come file WAV. I file vanno nella cartella Download; in Chrome ed Edge su computer il pulsante **📁** accanto a REC permette di scegliere un'altra cartella, dove le registrazioni vengono poi salvate automaticamente (clicca di nuovo 📁 per cambiarla o tornare a Download).
 
 ## Preset e sessioni
 
@@ -48,31 +51,30 @@ Dal menu **PRESET**:
 | ＋ Salva il suono attuale… | Salva manopole, levette, cavi e voci con un nome (anche col pulsante SALVA); a scelta anche il pattern su cui stai lavorando |
 | ★ nome | Richiama un tuo preset |
 | ✕ Elimina «nome» | Elimina il preset caricato |
-| ⇩ Esporta sessione | Crea `S3340-sessione.json` con preset, suono attuale, tempo, i 64 pattern e le impostazioni |
+| ⇩ Esporta sessione… | Salva un file di sessione con data e ora nel nome (es. `S3340-session-2026-11-22-2135.json`). In Chrome ed Edge su computer si apre la finestra *Salva con nome* del sistema per scegliere cartella e nome; altrove puoi modificare il nome e il file va in Download. Una finestra fa scegliere cosa includere (di default tutto): preset utente, suono attuale, i 64 pattern, impostazioni, effetti, assegnazioni MIDI. All'importazione si ripristinano solo le parti presenti nel file |
 | ⇧ Importa sessione o preset | Aggiunge i preset del file e, se confermi, ripristina la sessione |
 
 Ogni preset di fabbrica porta con sé un pattern d'esempio: caricandolo, il pattern va nel pattern di lavoro (premi PLAY/STOP per sentirlo) e i banchi salvati non vengono toccati. Se il pattern di lavoro ha modifiche non salvate, il simulatore chiede prima se sostituirlo o caricare solo il suono.
 
 I **pattern** del sequencer hanno una memoria propria (8 banchi × 8 pattern): si salvano tenendo **SHIFT + PLAY per 2 secondi**, scegliendo il pattern coi pad (PATTERN + pad per il banco) e confermando con **SHIFT + REC**.
 
-Tutto viene salvato nel browser. La versione online e quella installata offline hanno memorie separate: per passare da una all'altra usa Esporta e Importa.
+Tutto viene salvato nel browser. Su iPhone e iPad l'app installata ha una memoria propria, separata da Safari: per passare da una all'altra usa Esporta e Importa.
 
-## Usarlo offline (iPhone, iPad, Android)
+## Installare l'app e usarla offline
 
 Il simulatore è una PWA: dopo la prima apertura funziona anche senza connessione.
 
 - **iPhone / iPad (Safari)**: apri la pagina, tocca Condividi → **Aggiungi alla schermata Home**.
 - **Android (Chrome)**: menu ⋮ → **Installa app**.
+- **Computer (Chrome o Edge)**: clicca l'icona di installazione a destra nella barra dell'indirizzo, oppure menu ⋮ → **Installa**. L'app si apre in una finestra propria.
+
+Quando esce una nuova versione, viene scaricata da sola la volta successiva che apri l'app con la connessione attiva.
 
 ## Compatibilità
 
 - Audio: Chrome, Edge, Firefox, Safari recenti (AudioWorklet, con ripiego automatico se non disponibile).
 - MIDI: Chrome ed Edge su computer e Android. Safari e i browser su iPhone/iPad non supportano Web MIDI.
 
-## Note tecniche
-
-Il motore audio gira in un AudioWorklet a frequenza di campionamento piena: oscillatori con anti-aliasing polyBLEP, filtro ladder a ritardo zero (ZDF) con saturazione, inviluppi esponenziali, patch bay elaborata campione per campione.
-
 ## Crediti
 
-Sviluppato con l'assistenza dell'intelligenza artificiale. Scelte di progetto, prove e revisione finale a cura dell'autore.
+Sviluppato con l'assistenza dell'AI. Scelte progettuali, test e revisione finale a cura dell'autore.
