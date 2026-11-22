@@ -47,6 +47,13 @@ Values not given in the specifications are the author's choices: sequencer tempo
 3. To patch a cable, tap an **output** and then an **input**. Tapping an input that is already patched removes the cable.
 4. The **?** button opens the guide with every key combination.
 
+## MIDI controller and recording
+
+- **MIDI LEARN** (computer, Chrome or Edge): open **MIDI**, press *Assign knobs and switches (MIDI LEARN)*, click a knob, switch, pedal knob, footswitch or SYNC, then move a knob/fader or press a button on your controller. Purple badges show the assigned CC or note. *Remove assignment* frees the selected control, *Clear all* removes every assignment, Esc or *Done* exits. Assignments are saved in the browser.
+- Knobs and faders set the value directly; buttons (momentary or toggle, CC or note) flip switches and pedals on/off.
+- Novation Launch Control XL 3: use a **Custom Mode** (encoders send absolute CCs there); the DAW modes are reserved for DAW software.
+- **● REC** (or the **R** key) records the final output, effects included: WAV in this offline version, WebM/MP4 inside claude.ai.
+
 ## Presets and sessions
 
 From the **PRESET** menu:

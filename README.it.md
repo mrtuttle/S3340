@@ -32,6 +32,13 @@ Simulatore da browser di un sintetizzatore semi-modulare analogico con schema is
 3. Per collegare un cavo tocca un'**uscita** e poi un **ingresso**. Toccando un ingresso già collegato il cavo si stacca.
 4. Il pulsante **?** apre la guida con tutte le combinazioni di tasti.
 
+## Controller MIDI e registrazione
+
+- **MIDI LEARN** (computer, Chrome o Edge): apri **MIDI**, premi *Assegna manopole e switch (MIDI LEARN)*, clicca una manopola, uno switch, una manopola di un pedale, un interruttore a pedale o SYNC, poi muovi una manopola/un fader o premi un pulsante del controller. I badge viola mostrano il CC o la nota assegnati. *Togli assegnazione* libera il controllo scelto, *Cancella tutte* le toglie tutte, Esc o *Fine* per uscire. Le assegnazioni restano salvate nel browser.
+- Manopole e fader impostano il valore direttamente; i pulsanti (momentanei o a levetta, CC o nota) commutano gli switch e accendono/spengono i pedali.
+- Novation Launch Control XL 3: usa un **Custom Mode** (lì gli encoder inviano CC assoluti); le modalità DAW servono ai programmi DAW.
+- **● REC** (o il tasto **R**) registra l'uscita finale, effetti compresi: WAV in questa versione offline, WebM/MP4 dentro claude.ai.
+
 ## Preset e sessioni
 
 Dal menu **PRESET**:
@@ -56,24 +63,6 @@ Il simulatore è una PWA: dopo la prima apertura funziona anche senza connession
 
 - **iPhone / iPad (Safari)**: apri la pagina, tocca Condividi → **Aggiungi alla schermata Home**.
 - **Android (Chrome)**: menu ⋮ → **Installa app**.
-
-Dopo un aggiornamento dei file su GitHub, apri l'app una volta con la connessione attiva per scaricare la nuova versione.
-
-## Pubblicazione su GitHub Pages
-
-1. Carica il contenuto di questa cartella nel repository (deve essere **pubblico**, o serve un piano che consenta Pages su repository privati).
-2. Settings → **Pages** → Source: *Deploy from a branch*, branch `main`, cartella `/ (root)`.
-3. Dopo un paio di minuti la pagina è disponibile all'indirizzo indicato da GitHub.
-
-## File
-
-| File | Contenuto |
-|---|---|
-| `index.html` | Il simulatore completo (interfaccia, motore audio, font incorporati) |
-| `sw.js` | Service worker per l'uso offline |
-| `manifest.webmanifest` | Dati dell'app installabile |
-| `icon-*.png` | Icone dell'app |
-| `OFL-*.txt` | Licenze dei font Barlow e JetBrains Mono (SIL Open Font License) |
 
 ## Compatibilità
 
