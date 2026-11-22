@@ -20,6 +20,7 @@
 #fxBtn{background:linear-gradient(180deg,#8a6cff,#5b3fd6);border-color:#a48cff;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.35)}#fxBtn:hover{filter:brightness(1.12)}#fxBtn.on2{background:linear-gradient(180deg,#b29cff,#7a5cff);border-color:#d6caff;color:#fff;box-shadow:0 0 10px rgba(150,120,255,.75)}#fxBtn.open{outline:2px solid #d6caff;outline-offset:2px}
 #recBtn{background:linear-gradient(180deg,#e0453a,#a8231b);border-color:#ff7a70;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.35);font-variant-numeric:tabular-nums}#recBtn:hover{filter:brightness(1.12)}#recBtn.rec{animation:recbl 1s steps(2,start) infinite;box-shadow:0 0 12px rgba(255,60,50,.8)}@keyframes recbl{50%{background:#5a0f0b}}
 body.mlearn #panel .kn,body.mlearn #panel .swc,body.mlearn #panel .tg,body.mlearn #fxBoard .fxk,body.mlearn #fxBoard .fxsw,body.mlearn #fxBoard .fxsync{cursor:crosshair}body.mlearn #panel .kn,body.mlearn #panel .swc,body.mlearn #panel .tg{filter:drop-shadow(0 0 6px rgba(150,120,255,.55))}.mlsel{outline:4px solid #ffcc33!important;outline-offset:4px;border-radius:14px}#fxBoard .fxk,#fxBoard .fxsw,#fxBoard .fxsync{position:relative}[data-ml]::after{content:attr(data-ml);position:absolute;top:-4px;right:-10px;background:#7a5cff;color:#fff;font:700 9px/1.3 system-ui,sans-serif;padding:0 4px;border-radius:5px;pointer-events:none;z-index:6;white-space:nowrap;letter-spacing:0}#panel [data-ml]::after{font-size:30px;padding:2px 9px;border-radius:12px;top:-22px;right:-34px}#mlBar{position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:9000;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);background:#241c4a;border:2px solid #8a6cff;border-radius:10px;padding:8px 12px;color:#fff;font:500 14px system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.6)}#mlBar b{color:#ffcc33;letter-spacing:.1em}#mlBar .mlmsg{min-width:240px}
+#mMon{margin:10px 0;padding:8px 10px;background:#0d0f11;border:1px solid #3a3f44;border-radius:8px;font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;color:#cfe}#mMon .mmh{font:700 11px system-ui,sans-serif;letter-spacing:.12em;color:#8a6cff;margin-bottom:4px}#mMon .mmp{font:13px/1.4 system-ui,sans-serif;color:#ddd;margin-bottom:6px}#mMon .mml{max-height:170px;overflow:auto}#mMon .mml span{color:#777}#mMon .mml i{color:#888}#mMon .bad{color:#ff8a7a}#mMon .dim{color:#888}
 </style>
 <style>
 :root{--bg:#121315;--ink:#ece5d3;--dim:#948e82;--acc:#ff5b3a;--acc2:#3cc7b5;--line:#363a40;--panel2:#2a2d31}
@@ -184,6 +185,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:2px 0 
   <p class="mrow"><label><input type="checkbox" id="mNotes"> USB OUT: invia le note di pad, tastiera e sequencer sul canale scelto</label></p>
   <p class="mrow"><label><input type="checkbox" id="mClock"> Invia il clock MIDI (start, stop e 24 impulsi per quarto) quando il sequencer usa il tempo interno</label></p>
   <p class="mrow" style="color:var(--dim);font-size:13px">Web MIDI funziona in Chrome/Edge su computer e Android; Safari e iPhone non lo supportano.</p>
+  <div id="mMon"><div class="mmh">MONITOR MIDI</div><div class="mmp"></div><div class="mml"></div></div>
   <p class="mrow"><button class="btn" id="mlBtn" style="background:linear-gradient(180deg,#8a6cff,#5b3fd6);color:#fff;border-color:#a48cff">Assegna manopole e switch (MIDI LEARN)</button> <span id="mlCount" style="color:var(--dim)"></span></p>
   <p class="mrow" style="color:var(--dim);font-size:13px">Clicca, poi muovi una manopola o premi un pulsante del controller: funziona per le manopole e gli switch del pannello e per manopole, interruttori e SYNC dei pedali. Esc per uscire.</p>
   <p><button class="btn on" id="midiClose">Chiudi</button></p>
@@ -1063,10 +1065,10 @@ let midiAcc=null,midiOut=null,midiFl=0;
 function initMidi(){
   if(midiAcc!==null)return;midiAcc=false;const st=$('midiSt');
   if(!navigator.requestMIDIAccess){st.textContent='MIDI n/d';return;}
-  navigator.requestMIDIAccess().then(acc=>{midiAcc=acc;
+  navigator.requestMIDIAccess().then(acc=>{midiAcc=acc;window.midiErr=null;
     const hook=()=>{let c=0;acc.inputs.forEach(i=>{i.onmidimessage=onMidi;c++;});st.textContent='MIDI '+c+' IN';st.classList.toggle('on2',c>0);fillOuts();};
     hook();acc.onstatechange=hook;
-  }).catch(()=>{st.textContent='MIDI n/d';});
+  }).catch(err=>{st.textContent='MIDI n/d';window.midiErr=(err&&err.name)||'errore';midiAcc=null;});
 }
 function fillOuts(){
   const sel=$('mOut');if(!sel)return;const cur=state.midi.out;sel.innerHTML='<option value="">nessuna</option>';
@@ -1544,8 +1546,41 @@ let fxPanelOpen=()=>false,fxDrawVals=()=>{};
   const upd=()=>{const s=document.getElementById('mlCount');if(s)s.textContent=count()?count()+' controlli assegnati':'nessun controllo assegnato';};
   const ms=document.getElementById('midiSt');if(ms)ms.addEventListener('click',upd);upd();
 })();
+/* ===================== MONITOR MIDI ===================== */
+(function(){
+  const box=document.getElementById('mMon');if(!box)return;
+  const log=[];let dirty=true;
+  const nm=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  function fmt(d){const s=d[0],c=s&0xF0,ch=(s&15)+1;
+    if(c===0x90&&d[2]>0)return 'NOTE ON  '+d[1]+' ('+nm[d[1]%12]+(Math.floor(d[1]/12)-1)+') vel '+d[2]+' · ch '+ch;
+    if(c===0x80||c===0x90)return 'NOTE OFF '+d[1]+' · ch '+ch;
+    if(c===0xB0)return 'CC '+d[1]+' = '+d[2]+' · ch '+ch;
+    if(c===0xE0)return 'PITCH BEND '+(((d[2]<<7)|d[1])-8192)+' · ch '+ch;
+    if(c===0xD0)return 'AFTERTOUCH '+d[1]+' · ch '+ch;
+    if(c===0xC0)return 'PROGRAM '+d[1]+' · ch '+ch;
+    if(s===0xF0)return 'SYSEX ('+d.length+' byte)';
+    if(s===0xFA)return 'START';if(s===0xFC)return 'STOP';if(s===0xFB)return 'CONTINUE';
+    return Array.from(d).map(x=>x.toString(16).padStart(2,'0')).join(' ');}
+  const prev=onMidi;
+  onMidi=function(e){try{const d=e.data;if(d&&d[0]!==0xF8&&d[0]!==0xFE){log.unshift({t:new Date().toTimeString().slice(0,8),p:e.target&&e.target.name||'',m:fmt(d)});if(log.length>12)log.length=12;dirty=true;}}catch(err){}return prev(e);};
+  if(midiAcc)midiAcc.inputs.forEach(i=>i.onmidimessage=onMidi);
+  function ports(){
+    if(!navigator.requestMIDIAccess)return '<b class="bad">Questo browser non supporta il MIDI. Usa Chrome o Edge sul computer.</b>';
+    if(window.midiErr)return '<b class="bad">Accesso al MIDI negato ('+window.midiErr+'). Se sei dentro Claude prova la versione offline; in Chrome controlla il lucchetto accanto all\'indirizzo → MIDI → Consenti.</b>';
+    if(!midiAcc)return 'Connessione al MIDI in corso…';
+    const ins=[];midiAcc.inputs.forEach(i=>ins.push(i.name+(i.state!=='connected'?' (scollegato)':'')+(i.connection==='closed'?'':'')));
+    const outs=[];midiAcc.outputs.forEach(o=>outs.push(o.name));
+    return '<b>Ingressi:</b> '+(ins.length?ins.join(', '):'<span class="bad">nessuno — il controller non viene visto (cavo, driver, oppure la porta è occupata da un altro programma)</span>')+'<br><b>Uscite:</b> '+(outs.length?outs.join(', '):'nessuna');}
+  function draw(){const dl=document.getElementById('midiDlg');if(!dl||!dl.classList.contains('show'))return;
+    const pv=box.querySelector('.mmp');const ph=ports();if(pv.innerHTML!==ph)pv.innerHTML=ph;
+    if(!dirty)return;dirty=false;
+    box.querySelector('.mml').innerHTML=log.length?log.map(r=>'<div><span>'+r.t+'</span> '+r.m+(r.p?' <i>'+r.p+'</i>':'')+'</div>').join(''):'<div class="dim">Nessun messaggio ricevuto: muovi una manopola o premi un pulsante del controller.</div>';}
+  setInterval(draw,150);
+  const ms=document.getElementById('midiSt');if(ms)ms.addEventListener('click',()=>{dirty=true;setTimeout(draw,50);setTimeout(()=>{dirty=true;draw();},600);});
+})();
 /* ===================== LINGUA / LANGUAGE (EN · IT) ===================== */
 const I18N=[
+['Questo browser non supporta il MIDI. Usa Chrome o Edge sul computer.','This browser does not support MIDI. Use Chrome or Edge on a computer.'],['Accesso al MIDI negato (','MIDI access denied ('],["). Se sei dentro Claude prova la versione offline; in Chrome controlla il lucchetto accanto all'indirizzo → MIDI → Consenti.",'). Inside Claude, try the offline version; in Chrome, click the padlock next to the address → MIDI → Allow.'],['Connessione al MIDI in corso…','Connecting to MIDI…'],['Ingressi:','Inputs:'],['Uscite:','Outputs:'],[' (scollegato)',' (disconnected)'],['nessuno — il controller non viene visto (cavo, driver, oppure la porta è occupata da un altro programma)','none — the controller is not seen (cable, driver, or the port is in use by another program)'],['Nessun messaggio ricevuto: muovi una manopola o premi un pulsante del controller.','No messages received: turn a knob or press a button on your controller.'],['MONITOR MIDI','MIDI MONITOR'],
 ['Clicca una manopola, uno switch o un pedale, poi muovi un controllo del controller.','Click a knob, a switch or a pedal, then move a control on your controller.'],['Collega il controller (Chrome o Edge), poi clicca un controllo e muovilo.','Connect your controller (Chrome or Edge), then click a control and move it.'],['Togli assegnazione','Remove assignment'],['Cancella tutte','Clear all'],['Clicca prima il controllo da liberare.','Click the control to free first.'],[': assegnazione tolta.',': assignment removed.'],[' non era assegnato.',' was not assigned.'],['Nessuna assegnazione da cancellare.','No assignments to clear.'],['Cancellare tutte le ','Clear all '],[' assegnazioni MIDI?',' MIDI assignments?'],['Tutte le assegnazioni cancellate.','All assignments cleared.'],['MIDI LEARN attivo: ','MIDI LEARN on: '],['MIDI LEARN terminato: ','MIDI LEARN off: '],[' assegnazioni',' assignments'],[': muovi un controllo del controller…',': move a control on your controller…'],[' (ora su ',' (now on '],['NOTA ','NOTE '],['Ricevuto ','Received '],['✓ Fine','✓ Done'],[': clicca prima il controllo da assegnare.',': click the control to assign first.'],['. Clicca un altro controllo, oppure Fine.','. Click another control, or Done.'],[' canale ',' channel '],['(canale ','(channel '],['Assegna manopole e switch (MIDI LEARN)','Assign knobs and switches (MIDI LEARN)'],[' controlli assegnati',' controls assigned'],['nessun controllo assegnato','no controls assigned'],['Clicca, poi muovi una manopola o premi un pulsante del controller: funziona per le manopole e gli switch del pannello e per manopole, interruttori e SYNC dei pedali. Esc per uscire.','Click a control, then turn a knob or press a button on your controller: works for panel knobs and switches and for pedal knobs, footswitches and SYNC. Esc to exit.'],
 ['Registrazione salvata: ','Recording saved: '],['Salvataggio annullato','Save cancelled'],['Salvataggio non disponibile qui','Saving not available here'],["Accendi prima l'audio (AUDIO), poi premi REC",'Turn the audio on first (AUDIO), then press REC'],['Registrazione in corso… premi di nuovo REC o R per fermare','Recording… press REC or R again to stop'],['Registrazione vuota','Empty recording'],['Preparo il file','Preparing the file'],['Registra l\'uscita audio (tasto R)','Record the audio output (R key)'],['Registra l\'uscita audio','Record the audio output'],
 /* ---- start overlay, header, menus ---- */
